@@ -1,7 +1,7 @@
 
-# Advanced API Client for Clio
+# Easy to use python client for the Clio API 
 
-This advanced API client is designed to interact with the Clio API, providing robust handling for HTTP request methods, query parameters, payload validation, and dynamic endpoint management.
+This API client is designed to interact with the Clio API, providing robust handling for HTTP request methods, query parameters, payload validation, and dynamic endpoint management.
 
 ## Key Features
 
