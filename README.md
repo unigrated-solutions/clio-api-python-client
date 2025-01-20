@@ -86,6 +86,23 @@ response = client.get.matters.client(id=123)
 
 ## Usage
 
+### Environment
+
+**Using venv**
+
+```bash
+git clone https://github.com/unigrated-solutions/clio-api-python-client.git && cd clio-api-python-client
+git submodule init
+git submodule update
+
+python -m venv .venv
+source .venv/bin/activate
+```
+
+```python
+pip install --upgrade pip && pip install -r requirements. txt
+```
+
 ### Initialization
 
 ```python
@@ -97,8 +114,15 @@ client = Client(access_token="your_access_token")
 ### Single Request Example
 
 ```python
-response = client.get.matters(fields="id", limit=10)
-print(response)
+response = client.get.matters() # Default limit is 200
+print(json.dumps(response, indent=2))
+```
+
+### Relational Endpoint Example
+
+```python
+related_contacts = client.get.matters.related_contacts(id=12345, fields="id,name")
+print(json.dumps(related_contacts, indent=2))
 ```
 
 ### Fetch All Paginated Results
@@ -106,15 +130,48 @@ print(response)
 ```python
 response_all = client.all.matters(fields="id,name")
 print(f"Total items retrieved: {len(response_all['data'])}")
+print(json.dumps(response_all, indent=2))
 ```
 
-### Relations Example
+### Request With Generated Fields
+
+**Using all**
+```python
+# Returns data from all available non nested fields
+response = client.get.matters(fields="all", limit=10)
+print(json.dumps(response, indent=2))
+
+# With nested fields
+response = client.get.matters(fields="all,client{all}", limit=10)
+print(json.dumps(response, indent=2))
+
+# Returns the id and etag of every nested resource within the endpoint
+response = client.get.matters(fields="all_ids", limit=10)
+print(json.dumps(response, indent=2))
+
+```
+
+### Datetime and Timedeltas
 
 ```python
-related_contacts = client.get.matters.related_contacts(id=12345, fields="id,name")
-print(related_contacts)
+# Absolute dates
+one_year_ago = date.today() - timedelta(days=365)
+response = client.all.matters(limit=200, open_date__= f'>={one_year_ago}', order="open_date(asc)", fields="all,client{name},practice_area{name,category},responsible_attorney{name}")
+print(json.dumps(response, indent=2))
+
+# Helper functions: end_of_the_month()
+entries = client.all.calendar_entries(fields="start_at,end_at,all_day,location,description,summary,attendees{name}", from_=datetime.now(), to=end_of_the_month())
+print(json.dumps(response, indent=2))
 ```
 
+### Exporting
+
+**To Excel Spreadsheet:**
+
+**Requires pandas < 2.0 and openpyxl**
+```python
+save_to_xlsx(client.all.contacts(fields="all,custom_field_values{field_name,value}"), "contacts.xlsx")
+```
 ---
 
 ## Internal Design
