@@ -198,35 +198,47 @@ def parse_field_string(field_string):
 
 def build_id_field_string(dataclass_obj):
     """
-    Constructs a string of all resources that contain an 'id' field,
-    including nested resources.
+    Constructs a string of all resources that contain an 'id' or 'etag' field,
+    including nested resources. Limits nesting to one level to match API constraints.
 
     Args:
         dataclass_obj: The target dataclass object to inspect.
 
     Returns:
-        str: A formatted string with all resources containing an 'id' field.
+        str: A formatted string with all resources containing 'id' or 'etag' fields,
+             limited to immediate nested resources only.
     """
 
-    def extract_id_fields(dataclass_obj, prefix=""):
-        fields_with_id = []
+    def extract_id_fields(dataclass_obj, allow_nesting=True):
+        fields_with_id_or_etag = []
+        has_id = False
+        has_etag = False
 
         for field_name, field_type in dataclass_obj.__annotations__.items():
             origin = get_origin(field_type)
             args = get_args(field_type)
             actual_type = args[0] if origin is Optional or origin is Union else field_type
 
-            # Check if the current field is 'id' at the top level
-            if field_name == "id" and prefix == "":
-                fields_with_id.append("id")
+            # Track presence of 'id' and 'etag' fields
+            if field_name == "id":
+                has_id = True
+            if field_name == "etag":
+                has_etag = True
 
-            # Check if the field is a dataclass and contains 'id'
-            if is_dataclass(actual_type):
-                nested_fields = extract_id_fields(actual_type)
-                if "id" in nested_fields:
-                    fields_with_id.append(f"{field_name}{{id}}")
+            # Check if the field is a nested dataclass
+            if is_dataclass(actual_type) and allow_nesting:
+                nested_fields = extract_id_fields(actual_type, allow_nesting=False)  # Disable further nesting
+                nested_fields = [f for f in nested_fields if f in ["id", "etag"]]  # Only include id and etag
+                if nested_fields:
+                    fields_with_id_or_etag.append(f"{field_name}{{{','.join(nested_fields)}}}")
 
-        return fields_with_id
+        # Add top-level 'id' and 'etag' fields if present
+        if has_id:
+            fields_with_id_or_etag.insert(0, "id")
+        if has_etag:
+            fields_with_id_or_etag.insert(1, "etag")
+
+        return fields_with_id_or_etag
 
     id_fields_list = extract_id_fields(dataclass_obj)
     return ",".join(id_fields_list)
