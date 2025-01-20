@@ -4,6 +4,7 @@ from datetime import datetime
 import typing_inspect
 
 import configs
+from utils.validate_fields import validate_field_string, build_id_field_string
 
 MAPPINGS: Dict[str, str] = configs.mappings
 
@@ -281,6 +282,8 @@ class EndpointBase:
         path = metadata["path"]
         query_model = metadata.get("query_model")
         request_body_model = metadata.get("request_body_model")
+        field_model = request_body_model = metadata.get("field_model")
+        print(field_model)
         method = metadata["method"].upper()
         
         path = self._format_path(path, kwargs)
@@ -288,6 +291,18 @@ class EndpointBase:
         query_params = {}
         validation_errors = {"query": {}, "data": {}}
 
+        if field_model and "fields" in kwargs.keys():
+            print("fields in kwargs")
+            print(kwargs["fields"])
+            field_string = kwargs["fields"]
+            if field_string == "all_ids":
+                kwargs["fields"] = build_id_field_string(field_model)
+            else:
+                response = validate_field_string(field_model, field_string)
+                kwargs["fields"] = response.get("valid_string")
+                print(response)
+            
+            
         # Validate query parameters
         if query_model:
             for field, field_type in query_model.__annotations__.items():
