@@ -175,3 +175,5 @@ cython_debug/
 
 *.code-workspace
 .ignore/
+models/*
+contacts.xlsx
