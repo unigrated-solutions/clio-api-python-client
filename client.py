@@ -11,7 +11,7 @@ import configs
 from classes.request_methods import Get, Put, Post,Patch,Delete,Download, All
 from utils.export import save_to_xlsx, get_random_id
 from utils.time import end_of_the_month
-
+from db.response_handler import ResponseHandler
 
 BASE_URL = "https://app.clio.com/api/v4"
 
@@ -115,11 +115,14 @@ class RateMonitor:
         return decorator
     
 class Client:
-    def __init__(self, access_token, default_rate_limit=60):
+    def __init__(self, access_token, default_rate_limit=50):
         self.base_url = BASE_URL
         self.access_token = access_token
         self.rate_limiter = RateMonitor(default_limit=default_rate_limit)  # Attach rate limiter
 
+        # Initialize the response handler
+        self.response_handler = ResponseHandler()
+        
         # List of HTTP methods and their corresponding handler classes
         self.request_methods = configs.request_methods
         request_handler_classes = {
@@ -179,7 +182,7 @@ class Client:
         """
         endpoint = url.split(BASE_URL)[-1].split("?")[0]  # Extract endpoint from URL
         params = params or {}
-
+        print(f'Return ALl: {return_all}')
         @self.rate_limiter(endpoint)
         def make_request():
             try:
@@ -188,27 +191,32 @@ class Client:
                     self.rate_limiter.update_rate_limits(endpoint, response_obj.headers)
                     return response_obj
 
-                if not return_all:
+                if return_all is False:
                     # Single request
                     response_json, response_obj = self._make_request(url, method, params, payload)
                     self.rate_limiter.update_rate_limits(endpoint, response_obj.headers)
+                    self.response_handler.add_response(response_obj, kwargs.get('call_metadata'))
                     return response_json
 
                 # Paginated request
                 all_results = []
                 next_page_token = None
-
+                current_url = url 
+                
                 while True:
-                    
-                    if next_page_token:
-                        params["page_token"] = next_page_token
 
-                    response_json, response_obj = self._make_request(url, method, params, payload)
+                    if next_page_token:
+                        current_url = next_page_token 
+                        
+                    response_json, response_obj = self._make_request(current_url, method, params, payload)
+
                     self.rate_limiter.update_rate_limits(endpoint, response_obj.headers)
+                    self.response_handler.add_response(response_obj, kwargs.get('call_metadata'))
 
                     all_results.extend(response_json.get("data", []))
 
-                    next_page_token = response_json.get("meta", {}).get("paging", {}).get("next_page_token")
+                    next_page_token = response_json.get("meta", {}).get("paging", {}).get("next")
+                    print(next_page_token)
                     if not next_page_token:
                         break
 
@@ -245,29 +253,47 @@ class Client:
         except requests.exceptions.RequestException as e:
             raise RuntimeError(f"HTTP request failed: {e}") from e
         
-
+    def export_database(self, save_path="database_export.xlsx"):
+        
+        return self.response_handler.export_to_excel(save_path)
+    
+    def shutdown(self):
+        print("Waiting for all responses to be processed...")
+        client.response_handler.wait_for_completion()  # Ensure all tasks are finished
+        client.response_handler.stop_processing()      # Stop the background thread
+        
 # Example usage
 if __name__ == "__main__":
     '''
     Required Permissions to run examples below:
     Read: Api, Calendars, Contacts, Custom Fields, Documents, General, Matters, Users
     '''
-    token = "ACCESS_TOKEN"
+    token = "ACCESS TOKEN"
     client = Client(access_token=token)
+    try:
+
+        random_id = get_random_id(client.get.matters(limit=100, fields="id"))
+        
+        response = client.get.matters(id=random_id, fields="id,description,location,client{id,name}")
+        print(json.dumps(response, indent=2))
+        
+        response = client.get.matters.related_contacts(id=random_id, fields="first_name,last_name,is_matter_client,relationship{description}")
+        print(json.dumps(response, indent=2))
+        
+        response = client.get.matters.contacts(id=random_id, fields="first_name,last_name,is_client,relationship{description}")
+        print(json.dumps(response, indent=2))
+        
+        one_year_ago = date.today() - timedelta(days=365)
+        response = client.all.matters(limit=200, open_date__= f'>={one_year_ago}', order="open_date(asc)", fields="id,display_number,custom_number,open_date,description,location,client_reference,has_tasks,client{name},practice_area{name,category},responsible_attorney{name}")
+        save_to_xlsx(response)
+        
+        save_to_xlsx(client.all.calendar_entries(fields="start_at,end_at,all_day,location,description,summary,attendees{name}", from_=datetime.now(), to=end_of_the_month()),"calendar_spreadsheet.xlsx")
     
-    random_id = get_random_id(client.get.matters(limit=100, fields="id"))
-    
-    response = client.get.matters(id=random_id, fields="id,description,location,client{id,name}")
-    print(json.dumps(response, indent=2))
-    
-    response = client.get.matters.related_contacts(id=random_id, fields="first_name,last_name,is_matter_client,relationship{description}")
-    print(json.dumps(response, indent=2))
-    
-    response = client.get.matters.contacts(id=random_id, fields="first_name,last_name,is_client,relationship{description}")
-    print(json.dumps(response, indent=2))
-    
-    one_year_ago = date.today() - timedelta(days=365)
-    response = client.all.matters(limit=200, open_date__= f'>={one_year_ago}', order="open_date(asc)", fields="id,display_number,custom_number,open_date,description,location,client_reference,has_tasks,client{name},practice_area{name,category},responsible_attorney{name}")
-    save_to_xlsx(response)
-    
-    save_to_xlsx(client.all.calendar_entries(fields="start_at,end_at,all_day,location,description,summary,attendees{name}", from_=datetime.now(), to=end_of_the_month()),"calendar_spreadsheet.xlsx")
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+    finally:
+        if client:
+            client.shutdown() 
+        print("Client shutdown completed.")

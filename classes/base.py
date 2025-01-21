@@ -279,11 +279,14 @@ class EndpointBase:
         return path
 
     def _call_endpoint(self, metadata: dict, **kwargs):
+        
+        # Add models to kwargs for retrieve at the time of API call
+        kwargs["call_metadata"] = metadata
+        
         path = metadata["path"]
         query_model = metadata.get("query_model")
         request_body_model = metadata.get("request_body_model")
-        field_model = request_body_model = metadata.get("field_model")
-        print(field_model)
+        field_model = metadata.get("field_model")
         method = metadata["method"].upper()
         
         path = self._format_path(path, kwargs)
@@ -292,16 +295,12 @@ class EndpointBase:
         validation_errors = {"query": {}, "data": {}}
 
         if field_model and "fields" in kwargs.keys():
-            print("fields in kwargs")
-            print(kwargs["fields"])
             field_string = kwargs["fields"]
             if field_string == "all_ids":
                 kwargs["fields"] = build_id_field_string(field_model)
             else:
                 response = validate_field_string(field_model, field_string)
-                kwargs["fields"] = response.get("valid_string")
-                print(response)
-            
+                kwargs["fields"] = response.get("valid_string")            
             
         # Validate query parameters
         if query_model:
