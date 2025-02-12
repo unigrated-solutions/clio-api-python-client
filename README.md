@@ -206,6 +206,10 @@ Detailed logs are provided to help debug requests:
 
 ---
 
+## Known Issues
+
+- On some endpoints, DELETE throws an HTTPEXCEPTION but the command completes successfully in Clio. This can be circumvented by using a try/except block inside the running loop
+  
 ## License
 
 This project is licensed under the MIT License.
