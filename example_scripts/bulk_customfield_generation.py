@@ -1,10 +1,22 @@
+import sys
+import os
 import pandas as pd
+
+# Get the absolute path of the script file
+script_dir = os.path.dirname(os.path.abspath(__file__))
+cwd = os.getcwd()  # Get the current working directory
+
+# Only modify sys.path if the script is not in the current working directory
+if script_dir != cwd:
+    sys.path.append(os.path.abspath(os.path.join(script_dir, "..")))
+
+# Now you can import Client from the parent directory
 from client import Client
 
 def process_file(file_path, client):
-    # Read the file and ensure all columns are treated as strings
+    # Read the file and ensure all columns are treated as strings to avoid unexpected data types
     if file_path.endswith('.csv'):
-        df = pd.read_csv(file_path, dtype=str)  # Read all as strings
+        df = pd.read_csv(file_path, dtype=str)
     elif file_path.endswith('.xlsx'):
         df = pd.read_excel(file_path, dtype=str)
     else:
@@ -16,37 +28,43 @@ def process_file(file_path, client):
         missing_cols = required_columns - set(df.columns)
         raise ValueError(f"Missing required columns: {missing_cols}")
 
-    # Function to normalize boolean values
+    # Function to normalize boolean values (returns None if the value should be omitted)
     def normalize_boolean(value):
         if pd.isna(value) or value in [None, "", "nan", "NaN"]:  # Handle NaN or empty values
-            return None  # Return None to indicate omission from API call
+            return None  # Do not include in API call
         if isinstance(value, bool):  # Already a boolean
             return value
-        if isinstance(value, (int, float)):  # Handle numbers
+        if isinstance(value, (int, float)):  # Convert numbers (1 → True, 0 → False)
             return bool(value)
-        if isinstance(value, str):  # Normalize string representations
-            return value.strip().lower() in {"true", "yes", "1"}
-        return None  # Default to None for unrecognized values
+        if isinstance(value, str):  # Convert string representations
+            value = value.strip().lower()
+            if value in {"true", "yes", "1"}:
+                return True
+            elif value in {"false", "no", "0"}:
+                return False
+        return None  # Exclude if unrecognized
 
     # Iterate through each row and make API calls
     responses = []
     for _, row in df.iterrows():
         try:
-            # Construct API payload dynamically
+            # Construct API payload dynamically (include only required fields)
             payload = {
                 "name": row["name"],
                 "parent_type": row["parent_type"],
                 "field_type": row["field_type"]
             }
 
-            # Process `default` and `required`, adding them only if they are not empty
-            default_value = normalize_boolean(row.get("default"))
-            required_value = normalize_boolean(row.get("required"))
+            # Process `default` and `required` only if they exist in the file and are not empty
+            if "default" in df.columns:
+                default_value = normalize_boolean(row.get("default"))
+                if default_value is not None:
+                    payload["default"] = default_value  # Add only if valid
 
-            if default_value is not None:
-                payload["displayed"] = default_value  #### THE API USES displayed in the request but whats most are used to seeing under the "Default" column
-            if required_value is not None:
-                payload["required"] = required_value  # Add only if not empty
+            if "required" in df.columns:
+                required_value = normalize_boolean(row.get("required"))
+                if required_value is not None:
+                    payload["required"] = required_value  # Add only if valid
 
             # Make the API request
             response = client.post.custom_fields(**payload)
@@ -66,7 +84,7 @@ if __name__ == "__main__":
     '''
     access_token = "CHANGEME"
     file_path = "CHANGEME"
-    client = Client(access_token=access_token)
+    client = Client(access_token=access_token, store_responses=False)
     try:
         responses = process_file(file_path, client)
         print(responses)
