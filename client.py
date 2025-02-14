@@ -16,7 +16,7 @@ from db.response_handler import ResponseHandler
 BASE_URL = "https://app.clio.com/api/v4"
 
 class RateMonitor:
-    def __init__(self, default_limit=60):
+    def __init__(self, default_limit=50):
 
         self.default_limit = default_limit
         self.limits = {} 
@@ -115,13 +115,18 @@ class RateMonitor:
         return decorator
     
 class Client:
-    def __init__(self, access_token, default_rate_limit=50):
+    def __init__(self, access_token: str, default_rate_limit: int | None = None, store_responses: bool = True, db_path: str | None = None):
         self.base_url = BASE_URL
         self.access_token = access_token
-        self.rate_limiter = RateMonitor(default_limit=default_rate_limit)  # Attach rate limiter
 
-        # Initialize the response handler
-        self.response_handler = ResponseHandler()
+        # Initialize RateMonitor with optional default_limit
+        self.rate_limiter = RateMonitor(**({"default_limit": default_rate_limit} if default_rate_limit is not None else {}))
+
+        # Ensure db_path is set to ResponseHandler's default if not provided
+        db_path = db_path or "database.sqlite"
+
+        # Initialize ResponseHandler only if store_responses is enabled
+        self.response_handler = ResponseHandler(db_path=db_path) if store_responses else None
         
         # List of HTTP methods and their corresponding handler classes
         self.request_methods = configs.request_methods
@@ -195,7 +200,8 @@ class Client:
                     # Single request
                     response_json, response_obj = self._make_request(url, method, params, payload)
                     self.rate_limiter.update_rate_limits(endpoint, response_obj.headers)
-                    self.response_handler.add_response(response_obj, kwargs.get('call_metadata'))
+                    if self.response_handler:
+                        self.response_handler.add_response(response_obj, kwargs.get('call_metadata'))
                     return response_json
 
                 # Paginated request
@@ -258,9 +264,10 @@ class Client:
         return self.response_handler.export_to_excel(save_path)
     
     def shutdown(self):
-        print("Waiting for all responses to be processed...")
-        client.response_handler.wait_for_completion()  # Ensure all tasks are finished
-        client.response_handler.stop_processing()      # Stop the background thread
+        if self.response_handler:
+            print("Waiting for all responses to be processed...")
+            self.response_handler.wait_for_completion()  # Ensure all tasks are finished
+            self.response_handler.stop_processing()      # Stop the background thread
         
 # Example usage
 if __name__ == "__main__":

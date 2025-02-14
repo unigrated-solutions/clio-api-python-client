@@ -314,14 +314,35 @@ class ResponseHandler:
                 print(f"Error while processing response: {e}")
 
     def _handle_response(self, response, metadata):
-        if response.status_code == 200:
+        """
+        Handles API response, only raising exceptions for actual errors.
+        
+        Args:
+            response: The API response object.
+            metadata: Additional metadata related to the request.
+        
+        Returns:
+            None
+        """
+        # Successful response
+        if 200 <= response.status_code < 300:
             response_model = metadata.get('field_model')
-            data= response.json().get('data')
+            data = response.json().get('data')
 
             print("Success:", response_model)
             self.response_writer.process_response(response_model, data)
-        else:
+        
+        # Handle known non-error responses that shouldn't raise exceptions
+        elif response.status_code in {204, 202, 304}:  # No Content, Accepted, Not Modified
+            print(f"Non-error response received: {response.status_code} - {response.reason}")
+
+        # Raise an exception only for actual error status codes (4xx, 5xx)
+        elif 400 <= response.status_code < 600:
             print("Error:", response.status_code, response.text)
+            response.raise_for_status()  # Raises an HTTPError exception
+
+        else:
+            print(f"Unexpected response: {response.status_code} - {response.text}")
 
     def wait_for_completion(self):
         print("Waiting for all database operations to complete...")
