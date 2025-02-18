@@ -217,7 +217,8 @@ class Client:
                     response_json, response_obj = self._make_request(current_url, method, params, payload)
 
                     self.rate_limiter.update_rate_limits(endpoint, response_obj.headers)
-                    self.response_handler.add_response(response_obj, kwargs.get('call_metadata'))
+                    if self.response_handler:
+                        self.response_handler.add_response(response_obj, kwargs.get('call_metadata'))
 
                     all_results.extend(response_json.get("data", []))
 
@@ -260,15 +261,15 @@ class Client:
             raise RuntimeError(f"HTTP request failed: {e}") from e
         
     def export_database(self, save_path="database_export.xlsx"):
-        
-        return self.response_handler.export_to_excel(save_path)
+        if self.response_handler:
+            return self.response_handler.export_to_excel(save_path)
     
     def shutdown(self):
         if self.response_handler:
             print("Waiting for all responses to be processed...")
             self.response_handler.wait_for_completion()  # Ensure all tasks are finished
             self.response_handler.stop_processing()      # Stop the background thread
-        
+
 # Example usage
 if __name__ == "__main__":
     '''
