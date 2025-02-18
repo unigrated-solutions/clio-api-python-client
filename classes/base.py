@@ -139,6 +139,29 @@ class BaseRequest:
                     if converted_value is not None:
                         return converted_value
                 return {"error": f"Invalid value for field '{field_name}': {value} does not match any type in {args}."}
+            
+            if origin is list:
+                item_type = args[0] if args else Any
+
+                # ✅ Ensure the value is a list
+                if not isinstance(value, list):
+                    print(f"ERROR: Field '{field_name}' must be a list, got {type(value).__name__}")
+                    return None  # Prevent invalid values from being sent
+
+                # ✅ If expecting a list of dictionaries, return as-is
+                if item_type == dict and all(isinstance(v, dict) for v in value):
+                    return value  # Return without modification
+
+                # ✅ Convert each item to the expected type
+                validated_list = [self.validate_and_convert(field_name, item_type, v, required=False) for v in value]
+
+                # ✅ Ensure no validation errors exist
+                errors = [v for v in validated_list if isinstance(v, dict) and "error" in v]
+                if errors:
+                    print(f"Validation error for '{field_name}': {errors}")
+                    return None  # Prevent invalid data
+
+                return validated_list
 
             # Handle primitive types
             try:
