@@ -1,9 +1,10 @@
-# 3/4/25: 
-   -I was notified the database backup wasn't working correctly after the last commit that I tried to bypass the requirement. I've been working on a newer version that I'm getting ready to release but for now just run the following after installing the requirements:
+# 3/5/25 Update: 
+
+   - Added temp fix for sqlite database table generator.
+   - If issues continue, change line 129 in client.py to the following to completely remove it:
    ```python
-   python clio-api-model-generator/generate_models.py 
-   python db/db_generator.py 
-   ```
+   self.response_handler = None
+   ````
 
 # Easy to use python client for the Clio API 
 
@@ -106,7 +107,8 @@ source .venv/bin/activate
 ```
 
 ```python
-pip install --upgrade pip && pip install -r requirements. txt
+pip install --upgrade pip && pip install -r requirements.txt
+python clio-api-model-generator/generate_models.py 
 ```
 
 ### Initialization
