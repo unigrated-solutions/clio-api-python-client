@@ -30,6 +30,7 @@ if script_directory != cwd:
     
 from models.fields import *
 from models.components import *
+from db.db_generator import generate_database
 
 def escape_identifier(identifier):
     """
@@ -42,9 +43,20 @@ class ResponseWriter:
     def __init__(self, db_path="database.sqlite"):
         """Initialize the database connection and create table if it doesn't exist."""
         self.db_path = db_path
+        self._ensure_db_exists()
         self._initialize_db()
 
-    # Placeholder until database generator is merged
+    def _ensure_db_exists(self):
+        """Check if the database path exists; if not, generate the database."""
+        db_dir = os.path.dirname(self.db_path)
+        db_name = os.path.basename(self.db_path)
+        
+        if db_dir and not os.path.exists(db_dir):
+            os.makedirs(db_dir)  # Ensure directory exists
+        
+        if not os.path.exists(self.db_path):
+            generate_database(db_name=db_name)
+            
     def _initialize_db(self):
         """Creates the responses table if it does not exist."""
         conn = sqlite3.connect(self.db_path)
