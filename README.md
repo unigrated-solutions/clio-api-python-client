@@ -1,3 +1,9 @@
+# 3/4/25: 
+   -I was notified the database backup wasn't working correctly after the last commit that I tried to bypass the requirement. I've been working on a newer version that I'm getting ready to release but for now just run the following after installing the requirements:
+   ```python
+   python clio-api-model-generator/generate_models.py 
+   python db/db_generator.py 
+   ```
 
 # Easy to use python client for the Clio API 
 
