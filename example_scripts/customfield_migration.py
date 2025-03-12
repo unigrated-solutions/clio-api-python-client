@@ -7,10 +7,9 @@ This script allows users to **import and export custom fields** using the Clio A
 Features:
 - **Import custom fields** from an Excel (.xlsx) or CSV (.csv) file.
 - **Export existing custom fields** from the API to an Excel file.
-- **Handles errors gracefully** and logs failed imports to `failed_imports.txt`.
-- **Skips picklist fields** (as they cannot be imported).
+- **Handles errors and logs failed imports to `failed_imports.txt`.
 - **Skips deleted fields** (if the 'deleted' column is present and marked as True).
-- **Marks picklist and deleted fields in the exported file** so users are aware they won't migrate.
+- **Marks deleted fields in the exported file** so users are aware they won't migrate.
 
 Usage:
 ------
@@ -105,11 +104,6 @@ def import_custom_fields(file_path, client):
 
     for index, row in df.iterrows():
         try:
-            # Skip "picklist" fields since they cannot be imported
-            if row["field_type"].strip().lower() == "picklist":
-                print(f"Skipping 'picklist' field at row {index}: {row['name']}")
-                continue
-
             # Skip "deleted" fields if the column exists and is marked as True
             if "deleted" in df.columns:
                 deleted_value = normalize_boolean(row.get("deleted"))
@@ -129,6 +123,23 @@ def import_custom_fields(file_path, client):
                     if value is not None:
                         payload[payload_key] = value
 
+            # Handle Picklist Fields
+            if payload["field_type"].lower() == "picklist":
+                if "picklist_options" in df.columns:
+                    picklist_raw = row.get("picklist_options", "").strip()
+                    picklist_list = [opt.strip() for opt in picklist_raw.split(",") if opt.strip()]
+                    
+                    # Ensure at least 2 options exist
+                    if len(picklist_list) < 2:
+                        print(f"Skipping picklist field at row {index}: '{row['name']}' - Less than 2 options provided.")
+                        continue
+                    
+                    # Format into required structure
+                    payload["picklist_options"] = [{"option": opt} for opt in picklist_list]
+                else:
+                    print(f"Skipping picklist field at row {index}: '{row['name']}' - No picklist_options column found.")
+                    continue
+                
             response = client.post.custom_fields(**payload)
             responses.append(response)
 
@@ -148,22 +159,31 @@ def import_custom_fields(file_path, client):
     return responses
 
 def export_custom_fields(client, output_file="custom_fields.xlsx"):
-    """Fetches all custom fields and exports them to an Excel file, ensuring no overwrites."""
+    """Fetches all custom fields, includes picklist options, and exports them to an Excel file."""
     try:
-        response = client.all.custom_fields(fields="all")  # Keeping the correct API call
+        response = client.all.custom_fields(fields="all,picklist_options{option}")  # Keeping the correct API call
         if "data" not in response or not isinstance(response["data"], list):
             raise ValueError("Invalid API response format.")
 
         columns = ["id", "etag", "created_at", "updated_at", "name", "parent_type", 
-                   "field_type", "displayed", "deleted", "required", "display_order"]
+                   "field_type", "displayed", "deleted", "required", "display_order", "picklist_options"]
 
-        data = [{col: item.get(col, "") for col in columns} for item in response["data"]]
+        data = []
+        for item in response["data"]:
+            row = {col: item.get(col, "") for col in columns}
+
+            # Convert picklist options into a comma-separated string
+            if "picklist_options" in item and isinstance(item["picklist_options"], list):
+                row["picklist_options"] = ", ".join(option.get("option", "") for option in item["picklist_options"])
+            else:
+                row["picklist_options"] = ""  # Default to empty if no options exist
+
+            data.append(row)
+
         df = pd.DataFrame(data)
 
         # Highlight "picklist" fields and "deleted" fields by adding a warning column
         def warning_message(row):
-            if row["field_type"].lower() == "picklist":
-                return "Picklist - Cannot currently be imported"
             if "deleted" in row and normalize_boolean(row["deleted"]) is True:
                 return "Deleted field - will not be imported"
             return ""
@@ -175,7 +195,7 @@ def export_custom_fields(client, output_file="custom_fields.xlsx"):
 
         df.to_excel(output_filename, index=False)
 
-        print(f"Custom fields exported to {output_filename}. 'Picklist' and 'Deleted' fields are marked.")
+        print(f"Custom fields exported to {output_filename}. 'Deleted' fields are marked.")
 
     except Exception as e:
         print(f"Failed to export custom fields: {e}")
