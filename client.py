@@ -115,19 +115,16 @@ class RateMonitor:
         return decorator
     
 class Client:
-    def __init__(self, access_token: str, default_rate_limit: int | None = None, store_responses: bool = True, db_path: str | None = None):
+    def __init__(self, access_token: str, default_rate_limit: int | None = None, store_responses: bool = False, db_path: str | None = None):
         self.base_url = BASE_URL
-        self.access_token = access_token
-
+        self.response_handler = None
+        
+        self.set_bearer_token(access_token)
+        self.set_response_handler(store_responses, db_path)
+        
         # Initialize RateMonitor with optional default_limit
         self.rate_limiter = RateMonitor(**({"default_limit": default_rate_limit} if default_rate_limit is not None else {}))
 
-        # Ensure db_path is set to ResponseHandler's default if not provided
-        db_path = db_path or "database.sqlite"
-
-        # Initialize ResponseHandler only if store_responses is enabled
-        self.response_handler = ResponseHandler(db_path=db_path) if store_responses else None
-        
         # List of HTTP methods and their corresponding handler classes
         self.request_methods = configs.request_methods
         request_handler_classes = {
@@ -259,7 +256,17 @@ class Client:
         
         except requests.exceptions.RequestException as e:
             raise RuntimeError(f"HTTP request failed: {e}") from e
+    
+    def set_bearer_token(self, new_token: str):
+        self.access_token = new_token
         
+    def set_response_handler(self, store_responses: bool, db_path: str | None = None):
+        """Dynamically sets or updates the response handler during runtime."""
+        if db_path or store_responses:
+            self.response_handler = ResponseHandler(db_path or "database.sqlite")
+        else:
+            self.response_handler = None
+    
     def export_database(self, save_path="database_export.xlsx"):
         if self.response_handler:
             return self.response_handler.export_to_excel(save_path)
@@ -277,7 +284,7 @@ if __name__ == "__main__":
     Read: Api, Calendars, Contacts, Custom Fields, Documents, General, Matters, Users
     '''
     token = "ACCESS TOKEN"
-    client = Client(access_token=token)
+    client = Client(access_token=token, store_responses=True)
     try:
 
         random_id = get_random_id(client.get.matters(limit=100, fields="id"))
@@ -296,7 +303,6 @@ if __name__ == "__main__":
         save_to_xlsx(response)
         
         save_to_xlsx(client.all.calendar_entries(fields="start_at,end_at,all_day,location,description,summary,attendees{name}", from_=datetime.now(), to=end_of_the_month()),"calendar_spreadsheet.xlsx")
-    
 
     except Exception as e:
         print(f"An error occurred: {e}")
