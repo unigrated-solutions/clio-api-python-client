@@ -1,18 +1,13 @@
-import threading
-import queue
-import requests
-import time
-import json
-import pandas as pd
-
-import sqlite3
-import datetime
 import os
 import sys
-from dataclasses import fields, is_dataclass
-from pathlib import Path
-
+import json
+import threading
+import queue
+import sqlite3
 import logging
+
+import pandas as pd
+from pathlib import Path
 
 logging.basicConfig(level=logging.INFO)
 

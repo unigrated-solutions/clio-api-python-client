@@ -1,4 +1,5 @@
 request_methods = ["get", "put", "post", "patch", "delete", "download", "all"]
+
 mappings = {
             "X_API_VERSION": "X-API-VERSION",
             "from_": "from",
