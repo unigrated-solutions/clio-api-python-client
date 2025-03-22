@@ -2,20 +2,6 @@
 
 This API client is designed to interact with the Clio API, providing robust handling for HTTP request methods, query parameters, payload validation, and dynamic endpoint management.
 
-## 3/13/25 Update:
-   ### Database
-   - Database backup disabled by default. To enable, pass "store_responses=True" when initializing the client
-   - Without database backup results can't be exported to an xlsx file
-   
-   ### Model Generation Sub-Module
-   - **Disclaimer** : We are not affiliated with Clio or anyone on their development team. We're just working to help provide users with access to features that aren't directly available yet but can easily be achieved.
-   - The Clio API is in active development. Changes are made regularly to the public API documentation that this client generates its models from
-   - This client was developed specifically with this in mind so that the models are dynamically generated and can be updated without any changes to the code itself
-   - The required models for this API client to run should be regenerated frequently, but we're aware of the issues that others are facing trying to set up the initial enviroment that aren't familiar with the Python programming language and how it's executed
-   - Models have been added to the repository to skip the step of initializing the model generator and generating by the user themselves to hopefully ease the learning curve
-   - The majority of endopoints are not effected by changes to Clio public documentation they provide but the models provided will likely be outdated shortly
-   - Please submit any issues that you're having and we will gladly help you get setup.
-
 ## Key Features
 
 1. **Dynamic Endpoint Management**:
@@ -111,7 +97,7 @@ pip install --upgrade pip && pip install -r requirements.txt
 
 ```
 
-## Optional (See update above)
+## Optional (See UPDATES.md)
 ```bash
 git submodule init
 git submodule update
