@@ -228,3 +228,31 @@ Detailed logs are provided to help debug requests:
 ## License
 
 This project is licensed under the MIT License.
+
+## Initialization Flow Diagram
+
+## 🚀 Mermaid Diagram:
+
+```mermaid
+graph TD;
+    M[Application] --> A[API Client]
+    A --> L[Method Builder]
+
+    L -.-> K[Client Instance]
+    M --Chained Method Call ex:<br>get.matters.related_contacts--> K
+    A --> C[ResponseHandler]
+    C -.-> D[Thread Queue]
+    D -.-> E[ResponseWriter]
+    E --> H[Write to DB]
+
+    K --> B[API Request]
+    B --> F[API Response]
+    F --> M
+    F -.-> C
+
+    I[Stop Event] --Waits until Queue is Empty--> D
+    E --> D
+
+    M --> I
+
+```
