@@ -1,10 +1,9 @@
-
 import requests
 import aiohttp
 
 import configs
 from classes.request_methods import Get, Put, Post, Patch, Delete, Download, All
-from db.response_handler import ResponseHandler
+from response_handlers import Sqlite3Backup
 
 from utils import RateMonitor
 
@@ -315,7 +314,7 @@ class Client:
     def set_response_handler(self, store_responses: bool, db_path: str | None = None):
         """Dynamically sets or updates the response handler during runtime."""
         if db_path or store_responses:
-            self.response_handler = ResponseHandler(db_path or "database.sqlite")
+            self.response_handler = Sqlite3Backup(db_path or "database.sqlite")
         else:
             self.response_handler = None
     
