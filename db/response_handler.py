@@ -311,12 +311,16 @@ class ResponseHandler:
                 response_item = self.response_queue.get(timeout=5)
                 if response_item:
                     response, metadata = response_item
-                    self._handle_response(response, metadata)
-                    
-                    with self.lock:
-                        self.processing_count -= 1
 
-                self.response_queue.task_done()
+                    try:
+                        self._handle_response(response, metadata)
+                    except Exception as e:
+                        print(f"Error while processing response: {e}")
+
+                    finally:
+                        with self.lock:
+                            self.processing_count -= 1  # Always decrement, even on errors
+                        self.response_queue.task_done()  # Ensure task is marked as done
 
             except queue.Empty:
                 if self.stop_event.is_set():
@@ -341,6 +345,9 @@ class ResponseHandler:
             response_model = metadata.get('field_model')
             data = response.json().get('data')
 
+            # Ensure `data` is always a list
+            if isinstance(data, dict):
+                data = [data]
             print("Success:", response_model)
             self.response_writer.process_response(response_model, data)
         
