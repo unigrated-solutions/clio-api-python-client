@@ -126,8 +126,16 @@ class BaseRequest:
             # Handle Literal types explicitly
             if typing_inspect.is_literal_type(field_type):
                 valid_values = get_args(field_type)
-                if value not in valid_values and "date" not in field_name:
-                    return {"error": f"Invalid value for field '{field_name}': Expected one of {valid_values}, got '{value}'."}
+                if "date" not in field_name:
+                    # Try to find a case-insensitive match and return the correctly cased version
+                    if isinstance(value, str):
+                        for valid in valid_values:
+                            if isinstance(valid, str) and valid.lower() == value.lower():
+                                return valid  # Return corrected casing
+                    if value not in valid_values:
+                        return {
+                            "error": f"Invalid value for field '{field_name}': Expected one of {valid_values}, got '{value}'."
+                        }
                 return value
 
             # Handle Union types (including Optional)
