@@ -122,8 +122,9 @@ class BaseRequest:
                 # Fallback for single-element fields
                 if origin is None:
                     return self.validate_and_convert(field_name, args[0] if args else Any, value, required)
-
+            
             # Handle Literal types explicitly
+            # https://github.com/unigrated-solutions/clio-matters-customfield-order-management/blob/b5d9a44798e1bba593958f4708fa4d80979de1b2/api.py
             if typing_inspect.is_literal_type(field_type):
                 valid_values = get_args(field_type)
                 if "date" not in field_name:
