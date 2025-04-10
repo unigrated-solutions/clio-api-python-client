@@ -1,4 +1,8 @@
-## 3/13/25 Update:
+## 4/9/25 Update:
+   ### Database
+   - Tables seem to update themselves on the first request of the new model but to be on the safe side, create a copy before updating the client
+
+## 3/13/25:
    ### Database
    - Database backup disabled by default. To enable, pass "store_responses=True" when initializing the client
    - Without database backup results can't be exported to an xlsx file
