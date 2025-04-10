@@ -336,6 +336,7 @@ class BankAccount_Fields:
     controlled_account: Optional[bool] = None
     created_at: Optional[str] = None
     currency: Optional[str] = None
+    currency_symbol: Optional[str] = None
     currency_id: Optional[float] = None
     default_account: Optional[bool] = None
     domicile_branch: Optional[str] = None
@@ -367,6 +368,7 @@ class BankTransaction_Fields:
     date: Optional[str] = None
     amount: Optional[float] = None
     currency: Optional[str] = None
+    currency_id: Optional[int] = None
     description: Optional[str] = None
     exchange_rate: Optional[float] = None
     transaction_type: Optional[str] = None
@@ -462,6 +464,7 @@ class Bill_Fields:
     billing_setting: Optional[BillingSetting_base] = BillingSetting_base
     client_addresses: Optional[Address_base] = Address_base
     legal_aid_uk_bill: Optional[LegalAidUkBill_base] = LegalAidUkBill_base
+    split_invoice: Optional[SplitInvoice_base] = SplitInvoice_base
 
 @dataclass
 class BillTheme_Fields:
@@ -1165,6 +1168,7 @@ class Matter_Fields:
     originating_attorney: Optional[User_base] = User_base
     practice_area: Optional[PracticeArea_base] = PracticeArea_base
     responsible_attorney: Optional[User_base] = User_base
+    responsible_staff: Optional[User_base] = User_base
     statute_of_limitations: Optional[Task_base] = Task_base
     user: Optional[User_base] = User_base
     legal_aid_uk_matter: Optional[LegalAidUkMatter_base] = LegalAidUkMatter_base
@@ -1174,6 +1178,7 @@ class Matter_Fields:
     matter_bill_recipients: Optional[MatterBillRecipient_base] = MatterBillRecipient_base
     relationships: Optional[Relationship_base] = Relationship_base
     task_template_list_instances: Optional[TaskTemplateListInstace_base] = TaskTemplateListInstace_base
+    split_invoice_payers: Optional[SplitInvoicePayer_base] = SplitInvoicePayer_base
 
 @dataclass
 class MatterStage_Fields:
@@ -1298,6 +1303,7 @@ class Note_Fields:
     type: Optional[str] = None
     subject: Optional[str] = None
     detail: Optional[str] = None
+    detail_text_type: Optional[str] = None
     date: Optional[str] = None
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
@@ -1322,7 +1328,6 @@ class OutstandingClientBalance_Fields:
     pending_payments_total: Optional[float] = None
     reminders_enabled: Optional[bool] = None
     total_outstanding_balance: Optional[float] = None
-    total_outstanding_balance_by_currency: Optional[dict] = None
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
 
@@ -1578,6 +1583,7 @@ class Task_Fields:
     name: Optional[str] = None
     status: Optional[str] = None
     description: Optional[str] = None
+    description_text_type: Optional[str] = None
     priority: Optional[str] = None
     due_at: Optional[str] = None
     permission: Optional[str] = None

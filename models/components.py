@@ -240,6 +240,7 @@ class BankAccount_base:
     controlled_account: Optional[bool] = None
     created_at: Optional[datetime.datetime] = None
     currency: Optional[str] = None
+    currency_symbol: Optional[str] = None
     currency_id: Optional[float] = None
     default_account: Optional[bool] = None
     domicile_branch: Optional[str] = None
@@ -267,6 +268,7 @@ class BankTransaction_base:
     date: Optional[datetime.date] = None
     amount: Optional[float] = None
     currency: Optional[str] = None
+    currency_id: Optional[int] = None
     description: Optional[str] = None
     exchange_rate: Optional[float] = None
     transaction_type: Optional[str] = None
@@ -936,14 +938,11 @@ class Note_base:
     type: Optional[Literal['Matter', 'Contact']] = None
     subject: Optional[str] = None
     detail: Optional[str] = None
+    detail_text_type: Optional[Literal['plain_text', 'rich_text']] = None
     date: Optional[datetime.date] = None
     created_at: Optional[datetime.datetime] = None
     updated_at: Optional[datetime.datetime] = None
     time_entries_count: Optional[int] = None
-
-@dataclass
-class OutstandingClientBalance_base_Total_outstanding_balance_by_currency:
-    pass
 
 @dataclass
 class OutstandingClientBalance_base:
@@ -956,7 +955,6 @@ class OutstandingClientBalance_base:
     pending_payments_total: Optional[float] = None
     reminders_enabled: Optional[bool] = None
     total_outstanding_balance: Optional[float] = None
-    total_outstanding_balance_by_currency: Optional[OutstandingClientBalance_base_Total_outstanding_balance_by_currency] = None
     created_at: Optional[datetime.datetime] = None
     updated_at: Optional[datetime.datetime] = None
 
@@ -1157,6 +1155,7 @@ class Task_base:
     name: Optional[str] = None
     status: Optional[Literal['pending', 'in_progress', 'in_review', 'complete']] = None
     description: Optional[str] = None
+    description_text_type: Optional[Literal['plain_text', 'rich_text']] = None
     priority: Optional[Literal['High', 'Normal', 'Low']] = None
     due_at: Optional[datetime.date] = None
     permission: Optional[str] = None
@@ -1309,6 +1308,7 @@ class AccountBalance_base:
     balance: Optional[float] = None
     type: Optional[str] = None
     name: Optional[str] = None
+    currency_id: Optional[int] = None
 
 @dataclass
 class ActivityDescriptionRate_base:
@@ -1765,6 +1765,29 @@ class ReminderTemplate_base:
     etag: Optional[str] = None
     duration: Optional[int] = None
     notification_type: Optional[Literal['Email', 'Popup']] = None
+    created_at: Optional[datetime.datetime] = None
+    updated_at: Optional[datetime.datetime] = None
+
+@dataclass
+class SplitInvoicePayer_base:
+    id: Optional[int] = None
+    contact_id: Optional[int] = None
+    matter_id: Optional[int] = None
+    send_to_bill_recipients: Optional[bool] = None
+    split_portion: Optional[float] = None
+    etag: Optional[str] = None
+    created_at: Optional[datetime.datetime] = None
+    updated_at: Optional[datetime.datetime] = None
+
+@dataclass
+class SplitInvoice_base:
+    id: Optional[int] = None
+    bill_id: Optional[int] = None
+    linked_invoices_display_numbers: Optional[List[str]] = None
+    linked_invoices_ids: Optional[List[int]] = None
+    split_connection_id: Optional[str] = None
+    split_portion: Optional[float] = None
+    etag: Optional[str] = None
     created_at: Optional[datetime.datetime] = None
     updated_at: Optional[datetime.datetime] = None
 

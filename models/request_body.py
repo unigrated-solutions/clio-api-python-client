@@ -947,6 +947,10 @@ class Matter_create_RequestBody_Data_Responsible_attorney:
     id: Optional[int] = None
 
 @dataclass
+class Matter_create_RequestBody_Data_Responsible_staff:
+    id: Optional[int] = None
+
+@dataclass
 class Matter_create_RequestBody_Data_Statute_of_limitations:
     status: Optional[Literal['pending', 'in_progress', 'in_review', 'complete']] = None
     due_at: Optional[datetime.date] = None
@@ -976,6 +980,7 @@ class Matter_create_RequestBody_Data:
     relationships: Optional[List[dict]] = None
     reset_matter_number: Optional[bool] = None
     responsible_attorney: Optional[Matter_create_RequestBody_Data_Responsible_attorney] = None
+    responsible_staff: Optional[Matter_create_RequestBody_Data_Responsible_staff] = None
     split_invoice_payers: Optional[List[dict]] = None
     status: Optional[Literal['open', 'closed', 'pending']] = None
     statute_of_limitations: Optional[Matter_create_RequestBody_Data_Statute_of_limitations] = None
@@ -1033,6 +1038,10 @@ class Matter_update_RequestBody_Data_Responsible_attorney:
     id: Optional[int] = None
 
 @dataclass
+class Matter_update_RequestBody_Data_Responsible_staff:
+    id: Optional[int] = None
+
+@dataclass
 class Matter_update_RequestBody_Data_Statute_of_limitations:
     status: Optional[Literal['pending', 'in_progress', 'in_review', 'complete']] = None
     due_at: Optional[datetime.date] = None
@@ -1062,6 +1071,7 @@ class Matter_update_RequestBody_Data:
     relationships: Optional[List[dict]] = None
     reset_matter_number: Optional[bool] = None
     responsible_attorney: Optional[Matter_update_RequestBody_Data_Responsible_attorney] = None
+    responsible_staff: Optional[Matter_update_RequestBody_Data_Responsible_staff] = None
     split_invoice_payers: Optional[List[dict]] = None
     status: Optional[Literal['open', 'closed', 'pending']] = None
     statute_of_limitations: Optional[Matter_update_RequestBody_Data_Statute_of_limitations] = None
@@ -1151,6 +1161,7 @@ class Note_create_RequestBody_Data:
     type: Literal['Matter', 'Contact']
     date: Optional[datetime.date] = None
     detail: Optional[str] = None
+    detail_text_type: Optional[str] = None
     notification_event_subscribers: Optional[List[dict]] = None
     subject: Optional[str] = None
 
@@ -1162,6 +1173,7 @@ class Note_create_RequestBody:
 class Note_update_RequestBody_Data:
     date: Optional[datetime.date] = None
     detail: Optional[str] = None
+    detail_text_type: Optional[str] = None
     notification_event_subscribers: Optional[List[dict]] = None
     subject: Optional[str] = None
 
@@ -1396,6 +1408,7 @@ class Task_create_RequestBody_Data:
     cascading_offset_polarity: Optional[Literal['CalendarDays', 'CalendarWeeks', 'CalendarMonths', 'CalendarYears', 'BusinessDays']] = None
     cascading_offset_type: Optional[Literal['Before', 'After']] = None
     cascading_source: Optional[int] = None
+    description_text_type: Optional[Literal['plain_text', 'rich_text']] = None
     due_at: Optional[datetime.datetime] = None
     matter: Optional[Task_create_RequestBody_Data_Matter] = None
     notify_assignee: Optional[bool] = None
@@ -1433,6 +1446,7 @@ class Task_update_RequestBody_Data:
     cascading_offset_type: Optional[Literal['Before', 'After']] = None
     cascading_source: Optional[int] = None
     description: Optional[str] = None
+    description_text_type: Optional[Literal['plain_text', 'rich_text']] = None
     due_at: Optional[datetime.datetime] = None
     matter: Optional[Task_update_RequestBody_Data_Matter] = None
     name: Optional[str] = None
@@ -1594,6 +1608,7 @@ class Trustrequest_create_RequestBody_Data:
     issue_date: datetime.date
     trust_amount: float
     trust_type: Literal['client', 'matter']
+    currency_id: Optional[int] = None
     matter: Optional[List[dict]] = None
     note: Optional[str] = None
 
