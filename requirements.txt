@@ -14,3 +14,4 @@ typing-inspect
 typing_extensions
 tzdata
 urllib3
+aiohttp
