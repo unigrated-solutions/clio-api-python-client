@@ -1,4 +1,8 @@
-## 4/9/25 Update:
+## 6/17/25 Update:
+   - **Updated JSON to newest version in model generator**
+   - **Generated new models with updated API definitions**
+
+## 4/9/25:
    ### Database
    - Tables seem to update themselves on the first request of the new model but to be on the safe side, create a copy before updating the client
 

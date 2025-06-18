@@ -89,7 +89,6 @@ class Document_Fields:
     latest_document_version: Optional[DocumentVersion_base] = DocumentVersion_base
     group: Optional[Group_base] = Group_base
     external_properties: Optional[ExternalProperty_base] = ExternalProperty_base
-    document_versions: Optional[DocumentVersion_base] = DocumentVersion_base
 
 @dataclass
 class DocumentTemplate_Fields:
@@ -210,6 +209,7 @@ class ActivityDescription_Fields:
     rate: Optional[ActivityDescriptionRate_base] = ActivityDescriptionRate_base
     utbms_task: Optional[UtbmsCode_base] = UtbmsCode_base
     utbms_activity: Optional[UtbmsCode_base] = UtbmsCode_base
+    currency: Optional[Currency_base] = Currency_base
 
 @dataclass
 class ActivityRate_Fields:
@@ -695,6 +695,7 @@ class Contact_Fields:
     co_counsel_rate: Optional[ActivityRate_base] = ActivityRate_base
     primary_web_site: Optional[WebSite_base] = WebSite_base
     legal_aid_uk_contact: Optional[LegalAidUkContact_base] = LegalAidUkContact_base
+    currency: Optional[Currency_base] = Currency_base
 
 @dataclass
 class ConversationMessage_Fields:
@@ -896,6 +897,7 @@ class ExpenseCategory_Fields:
     # Nested resource fields
     groups: Optional[Group_base] = Group_base
     utbms_code: Optional[UtbmsCode_base] = UtbmsCode_base
+    currency: Optional[Currency_base] = Currency_base
 
 @dataclass
 class GrantFundingSource_Fields:
@@ -1172,6 +1174,7 @@ class Matter_Fields:
     statute_of_limitations: Optional[Task_base] = Task_base
     user: Optional[User_base] = User_base
     legal_aid_uk_matter: Optional[LegalAidUkMatter_base] = LegalAidUkMatter_base
+    currency: Optional[Currency_base] = Currency_base
     account_balances: Optional[AccountBalance_base] = AccountBalance_base
     custom_field_values: Optional[CustomFieldValue_base] = CustomFieldValue_base
     custom_field_set_associations: Optional[CustomFieldSetAssociation_base] = CustomFieldSetAssociation_base
@@ -1625,6 +1628,7 @@ class TaskTemplate_Fields:
     etag: Optional[str] = None
     name: Optional[str] = None
     description: Optional[str] = None
+    description_text_type: Optional[str] = None
     priority: Optional[str] = None
     private: Optional[bool] = None
     created_at: Optional[str] = None

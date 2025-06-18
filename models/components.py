@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, List, Literal
+from typing import Optional, List, Literal, Any
 import datetime
 
 @dataclass
@@ -1183,6 +1183,7 @@ class TaskTemplate_base:
     etag: Optional[str] = None
     name: Optional[str] = None
     description: Optional[str] = None
+    description_text_type: Optional[Literal['plain_text', 'rich_text']] = None
     priority: Optional[Literal['High', 'Normal', 'Low']] = None
     private: Optional[bool] = None
     created_at: Optional[datetime.datetime] = None

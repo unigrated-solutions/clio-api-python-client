@@ -2183,6 +2183,7 @@ class Document_index_Query:
     ids__: Optional[int] = None
     include_deleted: Optional[bool] = None
     limit: Optional[int] = None
+    locked: Optional[bool] = None
     matter_id: Optional[int] = None
     order: Optional[Literal['created_at(asc)', 'created_at(desc)', 'document_number(asc)', 'document_number(desc)', 'id(asc)', 'id(desc)', 'name(asc)', 'name(desc)', 'received_at(asc)', 'received_at(desc)', 'updated_at(asc)', 'updated_at(desc)']] = None
     page_token: Optional[str] = None
