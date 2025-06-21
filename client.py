@@ -89,7 +89,7 @@ class Client:
             "Authorization": f"Bearer {self.access_token}",
             "Content-Type": "application/json",
         }
-        print(params)
+        # print(params)
         params = params or {}
 
         try:
@@ -113,7 +113,7 @@ class Client:
         """
         endpoint = url.split(BASE_URL)[-1].split("?")[0]  # Extract endpoint from URL
         params = params or {}
-        print(f'Return ALl: {return_all}')
+        # print(f'Return ALl: {return_all}')
         @self.rate_limiter(endpoint)
         def make_request():
             try:
@@ -149,7 +149,7 @@ class Client:
                     all_results.extend(response_json.get("data", []))
 
                     next_page_token = response_json.get("meta", {}).get("paging", {}).get("next")
-                    print(next_page_token)
+                    # print(next_page_token)
                     if not next_page_token:
                         break
 
@@ -236,7 +236,7 @@ class Client:
             
         endpoint = url.split(BASE_URL)[-1].split("?")[0]  # Extract endpoint from URL
         params = params or {}
-        print(f'Return All: {return_all}')
+        # print(f'Return All: {return_all}')
 
         @self.rate_limiter(endpoint)
         async def make_request():
@@ -274,7 +274,7 @@ class Client:
                     all_results.extend(response_json.get("data", []))
 
                     next_page_token = response_json.get("meta", {}).get("paging", {}).get("next")
-                    print(next_page_token)
+                    # print(next_page_token)
                     if not next_page_token:
                         break
 

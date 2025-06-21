@@ -642,13 +642,13 @@ class DownloadEndpointBase:
 
         # Build the full URL
         url = BaseRequest.format_url(BaseRequest(self.base_url, self.base_path), path, query_params)
-        print( {
-            "url": url,
-            "method": metadata["method"].upper(),
-            "params": query_params,
-            "payload": payload,
-            "errors": {},
-        })
+        # print( {
+        #     "url": url,
+        #     "method": metadata["method"].upper(),
+        #     "params": query_params,
+        #     "payload": payload,
+        #     "errors": {},
+        # })
         
         return self.request_handler(url, method, query_params, payload)
       

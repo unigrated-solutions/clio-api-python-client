@@ -56,8 +56,8 @@ class RateMonitor:
             if "Retry-After" in response_headers:
                 self.limits[endpoint]["retry_after"] = int(response_headers["Retry-After"])
             
-            print(f"Rate limit for {endpoint}: {self.limits[endpoint]}")
-            print(f"Limit resets in {int(reset_timestamp - time.time())} seconds")
+            # print(f"Rate limit for {endpoint}: {self.limits[endpoint]}")
+            # print(f"Limit resets in {int(reset_timestamp - time.time())} seconds")
             
     def __call__(self, endpoint):
         """
