@@ -1,39 +1,40 @@
-
+import os
 import requests
 import aiohttp
+from urllib.parse import urljoin
 
 import configs
-from classes.request_methods import Get, Put, Post, Patch, Delete, Download, All
+from classes.requests import Get, Put, Post, Patch, Delete, Download, All
 from db.response_handler import ResponseHandler
-
+from classes.responses import ResponseWrapper
 from utils import RateMonitor
 
-BASE_URL = "https://app.clio.com/api/v4"
-
-class ResponseWrapper:
-    """Wrapper for aiohttp responses to ensure compatibility with Sqlite response handler """
-
-    def __init__(self, status_code, headers, json_data, text, content, url, reason=None):
-        self.status_code = status_code
-        self.headers = headers
-        self._json_data = json_data
-        self.text = text
-        self.content = content
-        self.url = url
-        self.reason = reason
-
-    def json(self):
-        return self._json_data
-
-    def raise_for_status(self):
-        """Raise an exception if the response contains an HTTP error."""
-        if 400 <= self.status_code < 600:
-            raise RuntimeError(f"HTTP {self.status_code}: {self.text}")  # Mimics `requests.HTTPError`
+BASE_URL = {
+    "us": "https://app.clio.com",
+    "au": "https://au.app.clio.com",
+    "ca": "https://ca.app.clio.com",
+    "eu": "https://eu.app.clio.com"
+}
+API_VERSION_PATH = {4: "api/v4"}
 
 class Client:
-    def __init__(self, access_token: str, default_rate_limit: int | None = None, store_responses: bool = False, db_path: str | None = None, async_requests = False,):
-        self.base_url = BASE_URL
+    def __init__(self,
+                 access_token: str,
+                 region: str = "US",
+                 api_version: int = 4,
+                 default_rate_limit: int | None = None,
+                 store_responses: bool = False,
+                 db_path: str | None = None,
+                 async_requests: bool = False):
         
+        base_path = BASE_URL.get(region.lower(), BASE_URL['us'])  
+        version_path = API_VERSION_PATH.get(api_version)
+        
+        if not version_path:
+            raise ValueError(f"Unsupported API version: {api_version}. Supported versions: {list(API_VERSION_PATH.keys())}")
+
+        self.base_url = urljoin(f"{base_path}/", f"{version_path}/")
+
         # Set client to run as syncronous/async
         if async_requests:
             self.request_handler = self._async_request_handler
@@ -111,7 +112,7 @@ class Client:
         """
         Handles requests, including support for paginated responses when return_all=True.
         """
-        endpoint = url.split(BASE_URL)[-1].split("?")[0]  # Extract endpoint from URL
+        endpoint = url.split(self.base_url)[-1].split("?")[0]  # Extract endpoint from URL
         params = params or {}
         # print(f'Return ALl: {return_all}')
         @self.rate_limiter(endpoint)
@@ -234,7 +235,7 @@ class Client:
         if not self.session:  # Ensure session is initialized
             self.session = aiohttp.ClientSession()
             
-        endpoint = url.split(BASE_URL)[-1].split("?")[0]  # Extract endpoint from URL
+        endpoint = url.split(self.base_url)[-1].split("?")[0]  # Extract endpoint from URL
         params = params or {}
         # print(f'Return All: {return_all}')
 
