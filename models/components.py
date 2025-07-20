@@ -967,6 +967,7 @@ class Payment_base:
     amount: Optional[float] = None
     date: Optional[datetime.date] = None
     source_fund_type: Optional[Literal['Client', 'Matter']] = None
+    payment_source_type: Optional[Literal['bank_account', 'credit_card', 'echeck', 'direct_payment', 'check', 'cash', 'interac_etransfer', 'wire_transfer', 'ach', 'eft', 'lawpay', 'paypal', 'cash_app', 'zelle', 'venmo', 'other']] = None
     voided_at: Optional[datetime.datetime] = None
     created_at: Optional[datetime.datetime] = None
     updated_at: Optional[datetime.datetime] = None
@@ -1126,6 +1127,8 @@ class BillingSetting_base:
     use_utbms_codes: Optional[bool] = None
     created_at: Optional[datetime.datetime] = None
     updated_at: Optional[datetime.datetime] = None
+    multi_currency_billing: Optional[bool] = None
+    billing_currencies: Optional[List[dict]] = None
 
 @dataclass
 class TextSnippet_base:
@@ -1153,7 +1156,7 @@ class Task_base:
     id: Optional[int] = None
     etag: Optional[str] = None
     name: Optional[str] = None
-    status: Optional[Literal['pending', 'in_progress', 'in_review', 'complete']] = None
+    status: Optional[Literal['pending', 'in_progress', 'in_review', 'complete', 'draft']] = None
     description: Optional[str] = None
     description_text_type: Optional[Literal['plain_text', 'rich_text']] = None
     priority: Optional[Literal['High', 'Normal', 'Low']] = None
@@ -1326,6 +1329,18 @@ class Attendee_base:
     name: Optional[str] = None
     enabled: Optional[bool] = None
     email: Optional[str] = None
+    created_at: Optional[datetime.datetime] = None
+    updated_at: Optional[datetime.datetime] = None
+
+@dataclass
+class AttorneyAllocation_base:
+    id: Optional[int] = None
+    etag: Optional[str] = None
+    account_id: Optional[int] = None
+    resource_id: Optional[int] = None
+    resource_type: Optional[str] = None
+    originating_attorney_allocation: Optional[float] = None
+    responsible_attorney_allocation: Optional[float] = None
     created_at: Optional[datetime.datetime] = None
     updated_at: Optional[datetime.datetime] = None
 

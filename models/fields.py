@@ -1174,6 +1174,7 @@ class Matter_Fields:
     statute_of_limitations: Optional[Task_base] = Task_base
     user: Optional[User_base] = User_base
     legal_aid_uk_matter: Optional[LegalAidUkMatter_base] = LegalAidUkMatter_base
+    attorney_allocation: Optional[AttorneyAllocation_base] = AttorneyAllocation_base
     currency: Optional[Currency_base] = Currency_base
     account_balances: Optional[AccountBalance_base] = AccountBalance_base
     custom_field_values: Optional[CustomFieldValue_base] = CustomFieldValue_base
@@ -1349,6 +1350,7 @@ class Payment_Fields:
     amount: Optional[float] = None
     date: Optional[str] = None
     source_fund_type: Optional[str] = None
+    payment_source_type: Optional[str] = None
     voided_at: Optional[str] = None
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
@@ -1554,6 +1556,8 @@ class BillingSetting_Fields:
     use_utbms_codes: Optional[bool] = None
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
+    multi_currency_billing: Optional[bool] = None
+    billing_currencies: Optional[List[dict]] = None
 
 @dataclass
 class TextSnippet_Fields:

@@ -950,7 +950,7 @@ class Matter_create_RequestBody_Data_Responsible_staff:
 
 @dataclass
 class Matter_create_RequestBody_Data_Statute_of_limitations:
-    status: Optional[Literal['pending', 'in_progress', 'in_review', 'complete']] = None
+    status: Optional[Literal['pending', 'in_progress', 'in_review', 'complete', 'draft']] = None
     due_at: Optional[datetime.date] = None
     reminders: Optional[List[dict]] = None
 
@@ -1041,7 +1041,7 @@ class Matter_update_RequestBody_Data_Responsible_staff:
 
 @dataclass
 class Matter_update_RequestBody_Data_Statute_of_limitations:
-    status: Optional[Literal['pending', 'in_progress', 'in_review', 'complete']] = None
+    status: Optional[Literal['pending', 'in_progress', 'in_review', 'complete', 'draft']] = None
     due_at: Optional[datetime.date] = None
     reminders: Optional[List[dict]] = None
 
@@ -1413,7 +1413,7 @@ class Task_create_RequestBody_Data:
     notify_completion: Optional[bool] = None
     permission: Optional[Literal['private', 'public']] = None
     priority: Optional[Literal['High', 'Normal', 'Low']] = None
-    status: Optional[Literal['pending', 'in_progress', 'in_review', 'complete']] = None
+    status: Optional[Literal['pending', 'in_progress', 'in_review', 'complete', 'draft']] = None
     statute_of_limitations: Optional[bool] = None
     task_type: Optional[Task_create_RequestBody_Data_Task_type] = None
     time_estimated: Optional[int] = None
@@ -1452,7 +1452,7 @@ class Task_update_RequestBody_Data:
     notify_completion: Optional[bool] = None
     permission: Optional[Literal['private', 'public']] = None
     priority: Optional[Literal['High', 'Normal', 'Low']] = None
-    status: Optional[Literal['pending', 'in_progress', 'in_review', 'complete']] = None
+    status: Optional[Literal['pending', 'in_progress', 'in_review', 'complete', 'draft']] = None
     task_type: Optional[Task_update_RequestBody_Data_Task_type] = None
     time_estimated: Optional[int] = None
 

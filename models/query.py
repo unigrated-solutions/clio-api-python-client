@@ -1244,6 +1244,7 @@ class Matter_index_Query:
     client_id: Optional[int] = None
     close_date__: Optional[Literal['>DATE', '>=DATE', '=DATE', '<=DATE', '<DATE']] = None
     created_since: Optional[datetime.datetime] = None
+    currency_id: Optional[int] = None
     custom_field_ids__: Optional[int] = None
     custom_field_values: Optional[Literal['=', '<', '>', '<=', '>=']] = None
     fields: Optional[str] = None
@@ -1719,8 +1720,8 @@ class Task_index_Query:
     priority: Optional[Literal['high', 'normal', 'low']] = None
     query: Optional[str] = None
     responsible_attorney_id: Optional[int] = None
-    status: Optional[Literal['pending', 'in_progress', 'in_review', 'complete']] = None
-    statuses__: Optional[Literal['pending', 'in_progress', 'in_review', 'complete']] = None
+    status: Optional[Literal['pending', 'in_progress', 'in_review', 'complete', 'draft']] = None
+    statuses__: Optional[Literal['pending', 'in_progress', 'in_review', 'complete', 'draft']] = None
     statute_of_limitations: Optional[bool] = None
     task_type_id: Optional[int] = None
     time_entries_present: Optional[bool] = None

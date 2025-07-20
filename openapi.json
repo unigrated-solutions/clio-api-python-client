@@ -28208,6 +28208,16 @@
             }
           },
           {
+            "name": "currency_id",
+            "in": "query",
+            "description": "Filter Matter records to those of a specific currency.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
             "name": "custom_field_ids[]",
             "in": "query",
             "description": "Filter Matter's custom_field_values to only include values for the given custom field unique identifiers.",
@@ -29020,7 +29030,8 @@
                               "pending",
                               "in_progress",
                               "in_review",
-                              "complete"
+                              "complete",
+                              "draft"
                             ],
                             "description": "The task status of Statue of Limitations. Users without advanced tasks are allowed to select `Complete' or `Pending` only."
                           },
@@ -29508,7 +29519,8 @@
                               "pending",
                               "in_progress",
                               "in_review",
-                              "complete"
+                              "complete",
+                              "draft"
                             ],
                             "description": "The task status of Statue of Limitations. Users without advanced tasks are allowed to select `Complete' or `Pending` only."
                           },
@@ -29996,7 +30008,8 @@
                               "pending",
                               "in_progress",
                               "in_review",
-                              "complete"
+                              "complete",
+                              "draft"
                             ],
                             "description": "The task status of Statue of Limitations. Users without advanced tasks are allowed to select `Complete' or `Pending` only."
                           },
@@ -30775,7 +30788,8 @@
                               "pending",
                               "in_progress",
                               "in_review",
-                              "complete"
+                              "complete",
+                              "draft"
                             ],
                             "description": "The task status of Statue of Limitations. Users without advanced tasks are allowed to select `Complete' or `Pending` only."
                           },
@@ -31266,7 +31280,8 @@
                               "pending",
                               "in_progress",
                               "in_review",
-                              "complete"
+                              "complete",
+                              "draft"
                             ],
                             "description": "The task status of Statue of Limitations. Users without advanced tasks are allowed to select `Complete' or `Pending` only."
                           },
@@ -31757,7 +31772,8 @@
                               "pending",
                               "in_progress",
                               "in_review",
-                              "complete"
+                              "complete",
+                              "draft"
                             ],
                             "description": "The task status of Statue of Limitations. Users without advanced tasks are allowed to select `Complete' or `Pending` only."
                           },
@@ -46278,7 +46294,8 @@
                 "pending",
                 "in_progress",
                 "in_review",
-                "complete"
+                "complete",
+                "draft"
               ]
             }
           },
@@ -46293,7 +46310,8 @@
                 "pending",
                 "in_progress",
                 "in_review",
-                "complete"
+                "complete",
+                "draft"
               ]
             }
           },
@@ -46622,7 +46640,8 @@
                           "pending",
                           "in_progress",
                           "in_review",
-                          "complete"
+                          "complete",
+                          "draft"
                         ],
                         "description": "Task status. Users without advanced tasks are allowed to select `Complete` or `Pending` only."
                       },
@@ -46786,7 +46805,8 @@
                           "pending",
                           "in_progress",
                           "in_review",
-                          "complete"
+                          "complete",
+                          "draft"
                         ],
                         "description": "Task status. Users without advanced tasks are allowed to select `Complete` or `Pending` only."
                       },
@@ -46950,7 +46970,8 @@
                           "pending",
                           "in_progress",
                           "in_review",
-                          "complete"
+                          "complete",
+                          "draft"
                         ],
                         "description": "Task status. Users without advanced tasks are allowed to select `Complete` or `Pending` only."
                       },
@@ -47369,7 +47390,8 @@
                           "pending",
                           "in_progress",
                           "in_review",
-                          "complete"
+                          "complete",
+                          "draft"
                         ],
                         "description": "Task status. Users without advanced tasks are allowed to select `Complete` or `Pending` only."
                       },
@@ -47520,7 +47542,8 @@
                           "pending",
                           "in_progress",
                           "in_review",
-                          "complete"
+                          "complete",
+                          "draft"
                         ],
                         "description": "Task status. Users without advanced tasks are allowed to select `Complete` or `Pending` only."
                       },
@@ -47671,7 +47694,8 @@
                           "pending",
                           "in_progress",
                           "in_review",
-                          "complete"
+                          "complete",
+                          "draft"
                         ],
                         "description": "Task status. Users without advanced tasks are allowed to select `Complete` or `Pending` only."
                       },
@@ -67686,6 +67710,10 @@
                 "$ref": "#/components/schemas/LegalAidUkMatter_base",
                 "description": "LegalAidUkMatter"
               },
+              "attorney_allocation": {
+                "$ref": "#/components/schemas/AttorneyAllocation_base",
+                "description": "AttorneyAllocation"
+              },
               "currency": {
                 "$ref": "#/components/schemas/Currency_base",
                 "description": "Currency"
@@ -68601,6 +68629,28 @@
               "Matter"
             ],
             "description": "The fund type for *Payment* source"
+          },
+          "payment_source_type": {
+            "type": "string",
+            "enum": [
+              "bank_account",
+              "credit_card",
+              "echeck",
+              "direct_payment",
+              "check",
+              "cash",
+              "interac_etransfer",
+              "wire_transfer",
+              "ach",
+              "eft",
+              "lawpay",
+              "paypal",
+              "cash_app",
+              "zelle",
+              "venmo",
+              "other"
+            ],
+            "description": "The method or source used to make the payment."
           },
           "voided_at": {
             "type": "string",
@@ -69939,6 +69989,17 @@
             "type": "string",
             "format": "date-time",
             "description": "The time the *BillingSetting* was last updated (as a ISO-8601 timestamp)"
+          },
+          "multi_currency_billing": {
+            "type": "boolean",
+            "description": "Whether multi-currency billing is enabled"
+          },
+          "billing_currencies": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            },
+            "description": "The currencies that an account has available for billing, if multi-currency billing is enabled"
           }
         }
       },
@@ -70180,7 +70241,8 @@
               "pending",
               "in_progress",
               "in_review",
-              "complete"
+              "complete",
+              "draft"
             ],
             "description": "Status of the *Task*. (Note that users without advanced tasks can only have either complete or pending)"
           },
@@ -71394,6 +71456,54 @@
             "type": "string",
             "format": "date-time",
             "description": "The time the *Attendee* was last updated (as a ISO-8601 timestamp)"
+          }
+        }
+      },
+      "AttorneyAllocation_base": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Unique identifier for the *AttorneyAllocation*"
+          },
+          "etag": {
+            "type": "string",
+            "description": "ETag for the *AttorneyAllocation*"
+          },
+          "account_id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "The unique account identifier"
+          },
+          "resource_id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "The unique identifier of the resource (e.g., Matter) this allocation belongs to"
+          },
+          "resource_type": {
+            "type": "string",
+            "description": "The type of the resource the allocation is associated with (e.g., Matter)"
+          },
+          "originating_attorney_allocation": {
+            "type": "number",
+            "format": "float",
+            "description": "The percentage of fees allocated to the originating attorney (0-100)"
+          },
+          "responsible_attorney_allocation": {
+            "type": "number",
+            "format": "float",
+            "description": "The percentage of fees allocated to the responsible attorney (0-100)"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The time the *AttorneyAllocation* was created (as a ISO-8601 timestamp)"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The time the *AttorneyAllocation* was last updated (as a ISO-8601 timestamp)"
           }
         }
       },
