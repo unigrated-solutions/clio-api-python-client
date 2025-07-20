@@ -1,4 +1,9 @@
-## 6/17/25 Update:
+## 7/19/25 Update:
+   - **Removed model api as submodule**
+   - **Clio API Model Generator has been published to pypi and is available via:**
+      - pip install clio-api-model-generator
+
+## 6/17/25:
    - **Updated JSON to newest version in model generator**
    - **Generated new models with updated API definitions**
 

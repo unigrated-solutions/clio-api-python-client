@@ -97,14 +97,6 @@ pip install --upgrade pip && pip install -r requirements.txt
 
 ```
 
-## Optional (See UPDATES.md)
-```bash
-git submodule init
-git submodule update
-
-python clio-api-model-generator/generate_models.py 
-```
-
 ### Initialization
 ```python
 from client import Client
