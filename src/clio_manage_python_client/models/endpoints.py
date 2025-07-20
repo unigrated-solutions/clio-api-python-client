@@ -1,7 +1,7 @@
 from typing import Dict, Type, Optional
-from models.query import *  # Import all query models
-from models.request_body import *  # Import all request body models
-from models.fields import *
+from .query import *  # Import all query models
+from .request_body import *  # Import all request body models
+from .fields import *
 
 class Endpoints:
     """

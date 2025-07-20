@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
-from models.components import *
+from .components import *
 
 @dataclass
 class ErrorDetail_Fields:

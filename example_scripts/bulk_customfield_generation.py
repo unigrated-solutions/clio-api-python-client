@@ -1,17 +1,19 @@
-import sys
-import os
 import pandas as pd
 
-# Get the absolute path of the script file
-script_dir = os.path.dirname(os.path.abspath(__file__))
-cwd = os.getcwd()  # Get the current working directory
+try:
+    # Try the installed package (preferred)
+    from clio_manage_python_client import Clio_Manage
+except ImportError:
+    # Fallback: add local path (assumes script is in project_root/example_scripts/)
+    import sys
+    from pathlib import Path
 
-# Only modify sys.path if the script is not in the current working directory
-if script_dir != cwd:
-    sys.path.append(os.path.abspath(os.path.join(script_dir, "..")))
+    project_root = Path(__file__).resolve().parents[1]
+    src_path = project_root / "src"
+    sys.path.insert(0, str(src_path))
 
-# Now you can import Client from the parent directory
-from client import Client
+    from clio_manage_python_client import Clio_Manage
+
 
 def process_file(file_path, client):
     # Read the file and ensure all columns are treated as strings to avoid unexpected data types
@@ -84,7 +86,7 @@ if __name__ == "__main__":
     '''
     access_token = "CHANGEME"
     file_path = "CHANGEME"
-    client = Client(access_token=access_token, store_responses=False)
+    client = Clio_Manage(access_token=access_token, store_responses=False)
     try:
         responses = process_file(file_path, client)
         print(responses)

@@ -1,7 +1,7 @@
 from typing import Dict, Any, List
-from models.models_registry import Endpoints
+from ..models.models_registry import Endpoints
 
-from classes.base import BaseRequest, EndpointBase, DownloadEndpointBase
+from .base import BaseRequest, EndpointBase, DownloadEndpointBase
 
 class MethodHandler(BaseRequest):
     """

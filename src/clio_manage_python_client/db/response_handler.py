@@ -15,17 +15,10 @@ logging.basicConfig(level=logging.INFO)
 SQL_RESERVED_KEYWORDS = {
     "default", "order", "group", "index", "table", "values", "key", "primary"
 }
-
-script_path = Path(__file__).resolve()
-script_directory = f'{script_path.parent}'
-cwd = os.getcwd()
-
-if script_directory != cwd:
-    sys.path.append(cwd)
     
-from models.fields import *
-from models.components import *
-from db.db_generator import generate_database
+from ..models.fields import *
+from ..models.components import *
+from .db_generator import generate_database
 
 def escape_identifier(identifier):
     """

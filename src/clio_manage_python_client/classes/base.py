@@ -3,8 +3,8 @@ from typing import Dict, Any, Optional, Type, List, Union, Tuple, get_origin, ge
 from datetime import datetime
 import typing_inspect
 
-import configs
-from utils.validate_fields import validate_field_string, build_id_field_string
+from .. import configs
+from ..utils.validate_fields import validate_field_string, build_id_field_string
 
 MAPPINGS: Dict[str, str] = configs.mappings
 

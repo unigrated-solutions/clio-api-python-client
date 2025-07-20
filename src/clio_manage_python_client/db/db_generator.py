@@ -1,18 +1,8 @@
 import sqlite3
 import datetime
-import os
-import sys
 from dataclasses import fields, is_dataclass
-from pathlib import Path
-
-script_path = Path(__file__).resolve()
-script_directory = f'{script_path.parent}'
-cwd = os.getcwd()
-
-if script_directory != cwd:
-    sys.path.append(cwd)
     
-from models.components import *  # Import all dataclasses from components.py
+from ..models.components import *  # Import all dataclasses from components.py
 
 def get_sql_type(py_type):
     """

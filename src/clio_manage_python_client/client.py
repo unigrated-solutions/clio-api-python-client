@@ -3,11 +3,11 @@ import requests
 import aiohttp
 from urllib.parse import urljoin
 
-import configs
-from classes.requests import Get, Put, Post, Patch, Delete, Download, All
-from db.response_handler import ResponseHandler
-from classes.responses import ResponseWrapper
-from utils import RateMonitor
+from . import configs
+from .classes.requests import Get, Put, Post, Patch, Delete, Download, All
+from .db.response_handler import ResponseHandler
+from .classes.responses import ResponseWrapper
+from .utils import RateMonitor
 
 BASE_URL = {
     "us": "https://app.clio.com",

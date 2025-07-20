@@ -29,22 +29,24 @@ This script is intended to be run via the command line.
 
 import sys
 import os
+import json
 import argparse
 import pandas as pd
 
-# Get the absolute path of the script file
-script_dir = os.path.dirname(os.path.abspath(__file__))
-cwd = os.getcwd()
-
-# Modify sys.path only if necessary
-if script_dir != cwd:
-    sys.path.append(os.path.abspath(os.path.join(script_dir, "..")))
-
-# Import Client from the parent directory
 try:
-    from client import Client
+    # Try the installed package (preferred)
+    from clio_manage_python_client import Clio_Manage
+    
 except ImportError:
-    raise ImportError("Could not find 'client.py'. Ensure it exists in the parent directory.")
+    # Fallback: add local path (assumes script is in project_root/example_scripts/)
+    import sys
+    from pathlib import Path
+
+    project_root = Path(__file__).resolve().parents[1]
+    src_path = project_root / "src"
+    sys.path.insert(0, str(src_path))
+
+    from clio_manage_python_client import Clio_Manage
 
 def get_output_filename(base_filename):
     """Ensures the output filename does not overwrite an existing file by appending a count."""
@@ -201,29 +203,45 @@ def export_custom_fields(client, output_file="custom_fields.xlsx"):
         print(f"Failed to export custom fields: {e}")
 
 def main():
-    parser = argparse.ArgumentParser(description="Manage custom fields with a client API.")
-    
-    parser.add_argument("--token", type=str, required=True, help="API access token.")
-    
-    parser.add_argument("--import", dest="import_file", type=str, nargs="?", const="custom_fields.xlsx", 
-                        help="Import custom fields from an XLSX or CSV file (default: custom_fields.xlsx).")
-    
-    parser.add_argument("--export", dest="export_file", type=str, nargs="?", const="custom_fields.xlsx", 
-                        help="Export custom fields to an XLSX file (default: custom_fields.xlsx).")
-    
+    parser = argparse.ArgumentParser(description="Import or export Clio custom fields using the API client.")
+    parser.add_argument("--token", type=str, required=True, help="Clio API access token.")
+
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument(
+        "--import-file",
+        dest="import_file",
+        type=str,
+        nargs="?",
+        const="custom_fields.xlsx",
+        help="Import custom fields from an XLSX or CSV file (default: custom_fields.xlsx)."
+    )
+    group.add_argument(
+        "--export-file",
+        dest="export_file",
+        type=str,
+        nargs="?",
+        const="custom_fields.xlsx",
+        help="Export custom fields to an XLSX file (default: custom_fields.xlsx)."
+    )
+
     args = parser.parse_args()
 
-    # Initialize Client
-    client = Client(access_token=args.token, store_responses=False)
+    client = Clio_Manage(access_token=args.token, store_responses=False)
 
     try:
         if args.export_file:
+            print(f"Exporting custom fields to: {args.export_file}")
             export_custom_fields(client, args.export_file)
-        if args.import_file:
+
+        elif args.import_file:
+            print(f"Importing custom fields from: {args.import_file}")
             responses = import_custom_fields(args.import_file, client)
-            print("API Responses:", responses)
+            print("API Responses:")
+            print(json.dumps(responses, indent=2))
+
     except Exception as e:
         print(f"Error: {e}")
+
     finally:
         client.shutdown()
         print("Client shutdown completed.")
