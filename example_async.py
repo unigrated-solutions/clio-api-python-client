@@ -1,8 +1,19 @@
 import asyncio
 import json
+import sys
+import os
 from datetime import datetime, timedelta, date
 
-from clio_manage_python_client import Clio_Manage
+try:
+    from clio_manage_python_client import Clio_Manage
+    
+except ImportError:
+    # If not installed, attempt relative import from src directory
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    src_path = os.path.abspath(os.path.join(current_dir, "src"))
+    if src_path not in sys.path:
+        sys.path.insert(0, src_path)
+    from clio_manage_python_client import Clio_Manage
 
 
 async def main():
