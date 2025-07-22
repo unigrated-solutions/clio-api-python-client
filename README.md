@@ -84,8 +84,11 @@ response = client.get.matters.client(id=123)
 ---
 
 ## Usage
-
+- **Models are now generated when the client is first ran directly from the latest API documentation**
+- **The Openapi spec file that is used to generate the dataclasses is now stored in the models/ subdirectory**
+- **Get the latest changes made to the API by using the update.py script. Existing model classes will be backed up**
 ### Environment
+
 
 **Using venv**
 
