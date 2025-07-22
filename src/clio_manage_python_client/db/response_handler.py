@@ -90,7 +90,7 @@ class ResponseWriter:
                             nested_model = getattr(response_model, key, None)
 
                             if nested_model is None:
-                                print(f"Skipping unknown nested field: {key}")
+                                # print(f"Skipping unknown nested field: {key}")
                                 continue
 
                             nested_table_name = str(nested_model.__name__)
@@ -144,8 +144,18 @@ class ResponseWriter:
         table_name = escape_identifier(table_name)
 
         # Filter records to remove nested keys and null values
-        filtered_data_list = [self._filter_data(record) for record in response_json_list]
+        filtered_data_list = []
 
+        for record in response_json_list:
+            filtered = self._filter_data(record)
+
+            # Serialize list or dict fields to strings for SQLite TEXT columns
+            for k, v in filtered.items():
+                if isinstance(v, (list, dict)):
+                    filtered[k] = json.dumps(v)
+
+            filtered_data_list.append(filtered)
+    
         cursor.execute(f'PRAGMA table_info({table_name})')
         table_info = cursor.fetchall()
 
@@ -205,7 +215,7 @@ class ResponseWriter:
                         WHERE {primary_key} = ?
                     """
                     update_queries.append((update_sql, update_values))
-                    logging.info(f"Updating record with {primary_key}={record_id}")
+                    logging.debug(f"Updating record with {primary_key}={record_id}")
 
             else:
                 provided_columns = [escape_identifier(col) for col in record if col in columns]
@@ -219,7 +229,7 @@ class ResponseWriter:
                     VALUES ({placeholders})
                 """
                 insert_queries.append((sql_query, record))
-                logging.info(f"Inserting new record with {primary_key}={record_id}")
+                logging.debug(f"Inserting new record with {primary_key}={record_id}")
 
         for sql, values in update_queries:
             cursor.executemany(sql, [values])
@@ -242,13 +252,13 @@ class ResponseWriter:
         row = cursor.fetchone()
 
         if row is None:
-            logging.info(f"No record found with ID {record_id} in table {table_name}, creating new record.")
+            logging.debug(f"No record found with ID {record_id} in table {table_name}, creating new record.")
             new_relationships = {nested_key: [nested_id_str]}
             cursor.execute(f"""
                 INSERT INTO {table_name} (id, endpoint_relationships)
                 VALUES (?, ?)
             """, (record_id_str, json.dumps(new_relationships)))
-            logging.info(f"Inserted new record with ID {record_id} and endpoint_relationships {new_relationships}")
+            logging.debug(f"Inserted new record with ID {record_id} and endpoint_relationships {new_relationships}")
 
         else:
             current_json = row[0] or '{}'
@@ -269,9 +279,9 @@ class ResponseWriter:
                     WHERE id = ?
                 """, (updated_json, record_id_str))
 
-                logging.info(f"Updated {table_name} (ID: {record_id}) with key '{nested_key}' and value '{nested_id}'")
+                logging.debug(f"Updated {table_name} (ID: {record_id}) with key '{nested_key}' and value '{nested_id}'")
             else:
-                logging.info(f"Nested ID '{nested_id}' already exists for key '{nested_key}', skipping update.")
+                logging.debug(f"Nested ID '{nested_id}' already exists for key '{nested_key}', skipping update.")
 
 class ResponseHandler:
     def __init__(self, db_path="database.sqlite"):

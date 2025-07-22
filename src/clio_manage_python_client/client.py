@@ -1,8 +1,19 @@
 import os
 import requests
 import aiohttp
+from pathlib import Path
 from urllib.parse import urljoin
 
+from clio_api_model_generator import clio_manage
+
+# 🔍 Detect models directory next to this file
+client_dir = Path(__file__).resolve().parent
+models_dir = client_dir / "models"
+
+if not models_dir.exists():
+    print("'models/' directory not found. Generating models...")
+    clio_manage.generate_models(output_dir=models_dir, overwrite=False)
+    
 from . import configs
 from .classes.requests import Get, Put, Post, Patch, Delete, Download, All
 from .db.response_handler import ResponseHandler
@@ -26,7 +37,7 @@ class Client:
                  store_responses: bool = False,
                  db_path: str | None = None,
                  async_requests: bool = False):
-        
+            
         base_path = BASE_URL.get(region.lower(), BASE_URL['us'])  
         version_path = API_VERSION_PATH.get(api_version)
         
