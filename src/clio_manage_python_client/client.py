@@ -33,7 +33,7 @@ class Client:
         if not version_path:
             raise ValueError(f"Unsupported API version: {api_version}. Supported versions: {list(API_VERSION_PATH.keys())}")
 
-        self.base_url = urljoin(f"{base_path}/", f"{version_path}/")
+        self.base_url = urljoin(f"{base_path}/", f"{version_path}")
 
         # Set client to run as syncronous/async
         if async_requests:
