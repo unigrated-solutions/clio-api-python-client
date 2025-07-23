@@ -2,6 +2,12 @@
 
 This API client is designed to interact with the Clio API, providing robust handling for HTTP request methods, query parameters, payload validation, and dynamic endpoint management.
 
+### Installation
+
+```bash
+pip install clio-manage-api-client
+```
+
 ## Key Features
 
 1. **Dynamic Endpoint Management**:
@@ -183,22 +189,6 @@ Handles requests, including:
 - Pagination support.
 - Query parameter and payload validation.
 - Dynamic path formatting with provided arguments.
-
----
-
-## Debugging
-
-Detailed logs are provided to help debug requests:
-- URL being called.
-- Parameters and payloads.
-- Pagination information (`page_token`).
-
----
-
-## Requirements
-
-- Python 3.7+
-- `requests` library
 
 ---
 

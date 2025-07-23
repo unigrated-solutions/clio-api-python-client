@@ -9,7 +9,7 @@ requirements = (project_root / "requirements.txt").read_text().splitlines()
 long_description = (project_root / "README.md").read_text()
 
 setup(
-    name="clio-manage-python-client",
+    name="clio-manage-api-client",
     version="0.1.0",
     author="Unigrated Partners",
     author_email="dev@unigratedpartners.com",
