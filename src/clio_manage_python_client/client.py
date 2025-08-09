@@ -1,32 +1,12 @@
-import os
 import requests
 import aiohttp
-from pathlib import Path
 from urllib.parse import urljoin
-
-from clio_api_model_generator import clio_manage
-
-# 🔍 Detect models directory next to this file
-client_dir = Path(__file__).resolve().parent
-models_dir = client_dir / "models"
-
-if not models_dir.exists():
-    print("'models/' directory not found. Generating models...")
-    clio_manage.generate_models(output_dir=models_dir, overwrite=False)
-    
-from . import configs
+   
+from .configs import *
 from .classes.requests import Get, Put, Post, Patch, Delete, Download, All
 from .db.response_handler import ResponseHandler
 from .classes.responses import ResponseWrapper
 from .utils import RateMonitor
-
-BASE_URL = {
-    "us": "https://app.clio.com",
-    "au": "https://au.app.clio.com",
-    "ca": "https://ca.app.clio.com",
-    "eu": "https://eu.app.clio.com"
-}
-API_VERSION_PATH = {4: "api/v4"}
 
 class Client:
     def __init__(self,
@@ -65,7 +45,7 @@ class Client:
         self.rate_limiter = RateMonitor(**({"default_limit": default_rate_limit} if default_rate_limit is not None else {}))
 
         # List of HTTP methods and their corresponding handler classes
-        self.request_methods = configs.request_methods
+        self.request_methods = REQUEST_METHODS
         
         request_handler_classes = {
             "get": Get,
@@ -101,7 +81,7 @@ class Client:
             "Authorization": f"Bearer {self.access_token}",
             "Content-Type": "application/json",
         }
-        # print(params)
+        print(params)
         params = params or {}
 
         try:

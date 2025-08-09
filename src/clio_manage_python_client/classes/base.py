@@ -3,10 +3,8 @@ from typing import Dict, Any, Optional, Type, List, Union, Tuple, get_origin, ge
 from datetime import datetime
 import typing_inspect
 
-from .. import configs
+from ..configs import *
 from ..utils.validate_fields import validate_field_string, build_id_field_string
-
-MAPPINGS: Dict[str, str] = configs.mappings
 
 def is_optional_type(field_type):
     """
@@ -82,7 +80,7 @@ class BaseRequest:
         """
         Enhanced validation and conversion method for handling filters, literals, and arrays.
         """
-        
+        # print(field_name,field_type,value,required)
         # Handle required fields
         if required and value is None:
             return None  # Validation fails for required fields that are None
@@ -101,6 +99,7 @@ class BaseRequest:
             
             # Handle array-like fields based on the field name
             if "__" in field_name:
+                
                 # Determine if the field is a list and process accordingly
                 if origin is list:
                     item_type = args[0] if args else Any
@@ -119,10 +118,21 @@ class BaseRequest:
                     # Return as a comma-separated string
                     return ",".join(map(str, validated_filters))
 
+                # Fix for integer <int64> arrays
+                if origin is Union and any(arg is int for arg in args):
+                    for i, v in enumerate(value):
+                        if not isinstance(v, int):
+                            try:
+                                # Try to convert the value to an integer
+                                value[i] = int(v)
+                            except (ValueError, TypeError):
+                                return None
+                    return value
+                
                 # Fallback for single-element fields
                 if origin is None:
                     return self.validate_and_convert(field_name, args[0] if args else Any, value, required)
-            
+
             # Handle Literal types explicitly
             # https://github.com/unigrated-solutions/clio-matters-customfield-order-management/blob/b5d9a44798e1bba593958f4708fa4d80979de1b2/api.py
             if typing_inspect.is_literal_type(field_type):
@@ -152,23 +162,23 @@ class BaseRequest:
             if origin is list:
                 item_type = args[0] if args else Any
 
-                # ✅ Ensure the value is a list
+                # Ensure the value is a list
                 if not isinstance(value, list):
                     print(f"ERROR: Field '{field_name}' must be a list, got {type(value).__name__}")
-                    return None  # Prevent invalid values from being sent
+                    return None
 
-                # ✅ If expecting a list of dictionaries, return as-is
+                # If expecting a list of dictionaries, return as-is
                 if item_type == dict and all(isinstance(v, dict) for v in value):
-                    return value  # Return without modification
+                    return value 
 
-                # ✅ Convert each item to the expected type
+                # Convert each item to the expected type
                 validated_list = [self.validate_and_convert(field_name, item_type, v, required=False) for v in value]
 
-                # ✅ Ensure no validation errors exist
+                # Ensure no validation errors exist
                 errors = [v for v in validated_list if isinstance(v, dict) and "error" in v]
                 if errors:
                     print(f"Validation error for '{field_name}': {errors}")
-                    return None  # Prevent invalid data
+                    return None
 
                 return validated_list
 
@@ -311,7 +321,6 @@ class EndpointBase:
         return path
 
     def _call_endpoint(self, metadata: dict, **kwargs):
-        
         # Add models to kwargs for retrieve at the time of API call
         kwargs["call_metadata"] = metadata
         
@@ -338,6 +347,7 @@ class EndpointBase:
         if query_model:
             for field, field_type in query_model.__annotations__.items():
                 mapped_field = MAPPINGS.get(field, field)
+
                 value = kwargs.pop(mapped_field, kwargs.pop(field, None))
 
                 if value is None and is_optional_type(field_type):
@@ -346,6 +356,7 @@ class EndpointBase:
                 validated_value = BaseRequest(self.base_path).validate_and_convert(
                     field, field_type, value, required=not is_optional_type(field_type)
                 )
+
                 if isinstance(validated_value, dict) and "error" in validated_value:
                     validation_errors["query"][field] = validated_value["error"]
                 elif validated_value is not None:
@@ -642,13 +653,6 @@ class DownloadEndpointBase:
 
         # Build the full URL
         url = BaseRequest.format_url(BaseRequest(self.base_url, self.base_path), path, query_params)
-        # print( {
-        #     "url": url,
-        #     "method": metadata["method"].upper(),
-        #     "params": query_params,
-        #     "payload": payload,
-        #     "errors": {},
-        # })
         
         return self.request_handler(url, method, query_params, payload)
       

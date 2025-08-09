@@ -1,4 +1,4 @@
-# Easy to use python client for the Clio API 
+# Easy to use python client for the Clio Manage API 
 
 This API client is designed to interact with the Clio API, providing robust handling for HTTP request methods, query parameters, payload validation, and dynamic endpoint management.
 
@@ -42,69 +42,10 @@ pip install clio-manage-api-client
    - Provides detailed validation error messages when inputs do not meet the expected types or requirements.
 
 ---
-
-## Reserved Keywords and Mapping
-
-The client automatically handles reserved keywords and non-standard endpoint parameters through a predefined `mappings` dictionary. This ensures compatibility and ease of use for all endpoints.
-
-### Example Mappings
-
-```python
-mappings = {
-    "X_API_VERSION": "X-API-VERSION",
-    "from_": "from", 
-    "ids__": "ids",
-    "jurisdiction__id": "jurisdiction[id]",
-    "service_type__id": "service_type[id]",
-    "trigger__id": "trigger[id]",
-}
-```
-
-### Handling Non-Standard Endpoints
-
-**Example Endpoint**:
-- **`https://app.clio.com/api/v4/matters/{matter_id}/client.json`**
-- **`https://app.clio.com/api/v4/matters/{id}.json`**
-
-Both `matter_id` and `id` can be used interchangeably. The client automatically maps `matter_id` to `id` for consistency.
-
-## Example Usage
-
-```python
-# Calls the 'show' endpoint for a specific matter
-response = client.get.matters(id=123)
-
-# Calls the 'client' relation endpoint for a specific matter
-response = client.get.matters.client(matter_id=123)
-
-# Calls the 'client' relation endpoint for a specific matter
-response = client.get.matters.client(id=123)
-```
-
-## Arrays(Needs more testing):
-- **Can be provided using by including a double underscore**
-- **Any text after the underscores get converted into a query parameter keyword**
-   - **`ids__ = [123,456,789]` gets converted to `ids[]=123&ids[]=456&ids[]=789`**
-   - **`jurisdiction__id = 123` gets converted to `jurisdiction[id]=123`**
-
----
-
-## Usage
+# Usage
 - **Models are now generated when the client is first ran directly from the latest API documentation**
 - **The Openapi spec file that is used to generate the dataclasses is now stored in the models/ subdirectory**
 - **Get the latest changes made to the API by using the update.py script. Existing model classes will be backed up**
-### Environment
-
-
-**Using venv**
-
-```bash
-git clone https://github.com/unigrated-solutions/clio-api-python-client.git && cd clio-api-python-client
-python -m venv .venv
-source .venv/bin/activate
-pip install --upgrade pip && pip install -r requirements.txt
-
-```
 
 ### Initialization
 ```python
@@ -175,6 +116,53 @@ print(json.dumps(response, indent=2))
 save_to_xlsx(client.all.contacts(fields="all,custom_field_values{field_name,value}"), "contacts.xlsx")
 ```
 ---
+
+## Logical Argument and Type Conversion
+
+**Example Endpoint**:
+- **`https://app.clio.com/api/v4/matters/{matter_id}/client.json`**
+- **`https://app.clio.com/api/v4/matters/{id}.json`**
+
+Both `matter_id` and `id` can be used interchangeably. The client automatically maps `matter_id` to `id` for consistency.
+
+## Example Usage
+
+```python
+# Calls the 'show' endpoint for a specific matter
+response = client.get.matters(id=123)
+
+# Calls the 'client' relation endpoint for a specific matter
+response = client.get.matters.client(matter_id=123)
+
+# Calls the 'client' relation endpoint for a specific matter
+response = client.get.matters.client(id=123)
+```
+
+## Arrays(Needs more testing):
+- **Can be provided using by including a double underscore**
+- **Any text after the underscores get converted into a query parameter keyword**
+   - **`ids__ = [123,456,789]` gets converted to `ids[]=123&ids[]=456&ids[]=789`**
+   - **`jurisdiction__id = 123` gets converted to `jurisdiction[id]=123`**
+
+---
+
+
+## Reserved Keywords and Mapping
+
+The client automatically handles reserved keywords and non-standard endpoint parameters through a predefined `mappings` dictionary. This ensures compatibility and ease of use for all endpoints.
+
+### Example Mappings
+
+```python
+mappings = {
+    "X_API_VERSION": "X-API-VERSION",
+    "from_": "from", 
+    "ids__": "ids",
+    "jurisdiction__id": "jurisdiction[id]",
+    "service_type__id": "service_type[id]",
+    "trigger__id": "trigger[id]",
+}
+```
 
 ## Internal Design
 

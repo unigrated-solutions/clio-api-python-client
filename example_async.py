@@ -4,17 +4,8 @@ import sys
 import os
 from datetime import datetime, timedelta, date
 
-try:
-    from clio_manage_python_client import Clio_Manage
+from clio_manage_python_client import ClioManage
     
-except ImportError:
-    # If not installed, attempt relative import from src directory
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    src_path = os.path.abspath(os.path.join(current_dir, "src"))
-    if src_path not in sys.path:
-        sys.path.insert(0, src_path)
-    from clio_manage_python_client import Clio_Manage
-
 
 async def main():
     '''
@@ -22,7 +13,7 @@ async def main():
     Read: Api, Calendars, Contacts, Custom Fields, Documents, General, Matters, Users
     '''
     token = "ACCESS TOKEN"
-    client = Clio_Manage(access_token=token, store_responses=True, async_requests=True)
+    client = ClioManage(access_token=token, store_responses=True, async_requests=True)
 
     try:
         # Use utility to pick a random ID from recent matters
