@@ -1,3 +1,6 @@
+from pathlib import Path
+
+DEFAULT_MODEL_DIRECTORY = Path(__file__).resolve().parent / "models"
 REQUEST_METHODS = ["get", "put", "post", "patch", "delete", "download", "all"]
 
 MAPPINGS = {
@@ -22,8 +25,3 @@ BASE_URL = {
 }
 
 API_VERSION_PATH = {4: "api/v4"}
-
-from .classes.requests import *
-from .db.response_handler import ResponseHandler
-from .classes.responses import ResponseWrapper
-from .utils import RateMonitor

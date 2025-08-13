@@ -8,6 +8,12 @@ This API client is designed to interact with the Clio API, providing robust hand
 pip install clio-manage-api-client
 ```
 
+### Initialization
+```python
+import clio-manage-api-client as Clio
+
+client = Clio.Manage(access_token="your_access_token") # 'store_responses=True' for sqlite response handler
+```
 ## Key Features
 
 1. **Dynamic Endpoint Management**:
@@ -42,17 +48,10 @@ pip install clio-manage-api-client
    - Provides detailed validation error messages when inputs do not meet the expected types or requirements.
 
 ---
-# Usage
+# Examples
 - **Models are now generated when the client is first ran directly from the latest API documentation**
 - **The Openapi spec file that is used to generate the dataclasses is now stored in the models/ subdirectory**
 - **Get the latest changes made to the API by using the update.py script. Existing model classes will be backed up**
-
-### Initialization
-```python
-from client import Client
-
-client = Client(access_token="your_access_token") # 'store_responses=True' for sqlite response handler
-```
 
 ### Single Request Example
 
