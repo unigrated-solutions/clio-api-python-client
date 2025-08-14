@@ -73,7 +73,7 @@ class Client:
         raise AttributeError(f"'Client' object has no attribute '{item}'")
     
     # Syncronous Requests
-    def _make_request(self, url: str, method: str, params: dict = None, payload: dict = None, return_all=False):
+    def _make_request(self, api_url: str, method: str, params: dict = None, payload: dict = None, return_all=False):
         """
         Makes the actual HTTP request based on the method.
         """
@@ -81,14 +81,13 @@ class Client:
             "Authorization": f"Bearer {self.access_token}",
             "Content-Type": "application/json",
         }
-        print(params)
         params = params or {}
 
         try:
             # Make the request
             response = requests.request(
                 method=method.upper(),
-                url=url,
+                url=api_url,
                 headers=headers,
                 params=params,
                 json=payload,
@@ -99,24 +98,24 @@ class Client:
         except requests.exceptions.RequestException as e:
             raise RuntimeError(f"HTTP request failed: {e}") from e
 
-    def _request_handler(self, url: str, method: str, params: dict = None, payload: dict = None, return_all=False, **kwargs):
+    def _request_handler(self, api_url: str, method: str, params: dict = None, payload: dict = None, return_all=False, **kwargs):
         """
         Handles requests, including support for paginated responses when return_all=True.
         """
-        endpoint = url.split(self.base_url)[-1].split("?")[0]  # Extract endpoint from URL
+        endpoint = api_url.split(self.base_url)[-1].split("?")[0]  # Extract endpoint from URL
         params = params or {}
         # print(f'Return ALl: {return_all}')
         @self.rate_limiter(endpoint)
         def make_request():
             try:
                 if method == "DOWNLOAD":
-                    response_obj = self._download_content(url, params)
+                    response_obj = self._download_content(api_url, params)
                     self.rate_limiter.update_rate_limits(endpoint, response_obj.headers)
                     return response_obj
 
                 if return_all is False:
                     # Single request
-                    response_json, response_obj = self._make_request(url, method, params, payload)
+                    response_json, response_obj = self._make_request(api_url, method, params, payload)
                     self.rate_limiter.update_rate_limits(endpoint, response_obj.headers)
                     if self.response_handler:
                         self.response_handler.add_response(response_obj, kwargs.get('call_metadata'))
@@ -125,7 +124,7 @@ class Client:
                 # Paginated request
                 all_results = []
                 next_page_token = None
-                current_url = url 
+                current_url = api_url 
                 
                 while True:
 

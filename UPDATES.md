@@ -1,4 +1,31 @@
-## 7/19/25 Update:
+## 8/14/25 Update:
+   - **Added temporary fix for endpoints that have 'fields' requirements in both the Query Parameters and Payload Parameters**
+   - **To be able to take advantage of the field builder validation for "fields='all'", I added an optional response_fields argument**
+      - This will override any provided "fields" argument even if "fields" isn't a required payload paramater.
+   ```python
+   response = client.post.webhooks(response_fields='all', fields='id,name,primary_phone_number', events=["created","updated"], model="contact", url='https://your-webhook-server.com/events')
+   ```
+   **Returns:** 
+   ```bash
+      "data": {
+         "id": 1234567,
+         "etag": "\"longetagstring\"",
+         "url": "https://your-webhook-server.com/events",
+         "fields": "id,name,primary_phone_number",
+         "shared_secret": "shared-secret",
+         "model": "contact",
+         "status": "pending",
+         "events": [
+            "created"
+         ],
+         "expires_at": "2025-08-17T00:15:35-04:00",
+         "created_at": "2025-08-14T00:15:35-04:00",
+         "updated_at": "2025-08-14T00:15:35-04:00"
+      }
+   ```
+   **Using 'all' will not create a webhook subscription that provides 'all' fields in the actual webhook. For now they still need to be set manually**
+
+## 7/19/25:
    - **Removed model api as submodule**
    - **Clio API Model Generator has been published to pypi and is available via:**
       - pip install clio-api-model-generator

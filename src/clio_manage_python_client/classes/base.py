@@ -2,6 +2,7 @@ from urllib.parse import urlencode
 from typing import Dict, Any, Optional, Type, List, Union, Tuple, get_origin, get_args, Literal
 from datetime import datetime
 import typing_inspect
+from dataclasses import fields, is_dataclass
 
 from ..configs import *
 from ..utils.validate_fields import validate_field_string, build_id_field_string
@@ -213,6 +214,7 @@ class BaseRequest:
             errors = {}
 
             for field_name, field_type in model.__annotations__.items():
+                print(field_name, field_type)
                 # Use the provided field name for validation; apply mappings after validation
                 original_field_name = field_name
                 mapped_field_name = MAPPINGS.get(field_name, field_name)
@@ -330,12 +332,31 @@ class EndpointBase:
         field_model = metadata.get("field_model")
         method = metadata["method"].upper()
         
+        use_field_model_for_fields = True  # default
+
+        # If request_body_model exists, check if it has a field named 'fields'
+        if request_body_model and "fields" in kwargs:
+            for f in fields(request_body_model):
+                # Check top-level
+                if f.name == "fields":
+                    use_field_model_for_fields = False
+                    break
+
+                # Check nested dataclass
+                if is_dataclass(f.type):
+                    nested_names = [sub_f.name for sub_f in fields(f.type)]
+                    if "fields" in nested_names:
+                        use_field_model_for_fields = False
+                        break
+
+        print("Use field model for 'fields'? ->", use_field_model_for_fields)
+                    
         path = self._format_path(path, kwargs)
 
         query_params = {}
         validation_errors = {"query": {}, "data": {}}
 
-        if field_model and "fields" in kwargs.keys():
+        if field_model and "fields" in kwargs and use_field_model_for_fields:
             field_string = kwargs["fields"]
             if field_string == "all_ids":
                 kwargs["fields"] = build_id_field_string(field_model)
@@ -343,9 +364,18 @@ class EndpointBase:
                 response = validate_field_string(field_model, field_string)
                 kwargs["fields"] = response.get("valid_string")            
             
+        # Validate 'response_fields' if provided, but only if we are NOT using the field model
+        if "response_fields" in kwargs and not use_field_model_for_fields:
+            field_string = kwargs["response_fields"]
+            response = validate_field_string(field_model, field_string)
+            kwargs["response_fields"] = response.get("valid_string")
+            
         # Validate query parameters
         if query_model:
             for field, field_type in query_model.__annotations__.items():
+                if field == "fields" and not use_field_model_for_fields:
+                    continue
+        
                 mapped_field = MAPPINGS.get(field, field)
 
                 value = kwargs.pop(mapped_field, kwargs.pop(field, None))
@@ -369,7 +399,12 @@ class EndpointBase:
             payload = payload_result.get("payload")
             if payload_result.get("errors"):
                 validation_errors["data"].update(payload_result["errors"])
-
+                
+        # Reinject response_fields into query_params if present as "fields"
+        response_fields = kwargs.get("response_fields")
+        if response_fields:
+            query_params["fields"] = response_fields
+            
         # If there are validation errors, return them
         if validation_errors["query"] or validation_errors["data"]:
             return {
@@ -380,8 +415,9 @@ class EndpointBase:
                 "errors": validation_errors,
             }
 
-        url = BaseRequest.format_url(BaseRequest(self.base_url, self.base_path), path, query_params)
-        return self.request_handler(url, method, query_params, payload, **kwargs)
+        api_url = BaseRequest.format_url(BaseRequest(self.base_url, self.base_path), path, query_params)
+
+        return self.request_handler(api_url, method, query_params, payload, **kwargs)
 
     def __getattr__(self, method_type: str):
         """
