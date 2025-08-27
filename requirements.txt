@@ -16,4 +16,4 @@ tzdata
 urllib3
 aiohttp
 pyyaml
-clio-api-model-generator==0.2.1
+clio-api-model-generator==0.2.2

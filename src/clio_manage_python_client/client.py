@@ -9,6 +9,27 @@ from .classes.responses import ResponseWrapper
 from .utils import RateMonitor
 
 class Client:
+    if TYPE_CHECKING:
+        get: "GetRequest"
+        post: "PostRequest"
+        create: "PostRequest"
+        update: "PatchRequest"
+        patch: "PatchRequest"
+        delete: "DeleteRequest"
+        download: "DownloadRequest"
+        all: "AllRequests"
+
+    request_methods = {
+        "get": Get,
+        "post": Post,
+        "create": Post,
+        "patch": Patch,
+        "delete": Delete,
+        "download": Download,
+        "all": All,  # For auto paginating record retrieval 
+        "put": Put # Unused
+    }
+        
     def __init__(self,
                  access_token: str,
                  region: str = "US",
@@ -44,22 +65,9 @@ class Client:
         # Initialize RateMonitor with optional default_limit
         self.rate_limiter = RateMonitor(**({"default_limit": default_rate_limit} if default_rate_limit is not None else {}))
 
-        # List of HTTP methods and their corresponding handler classes
-        self.request_methods = REQUEST_METHODS
-        
-        request_handler_classes = {
-            "get": Get,
-            "post": Post,
-            "patch": Patch,
-            "delete": Delete,
-            "download": Download,
-            "all": All,  # For auto paginating record retrieval 
-            "put": Put # Unused
-        }
-
         # Dynamically initialize and set request handlers as attributes
-        for method in self.request_methods:
-            handler_class = request_handler_classes[method]
+        for method in self.request_methods.keys():
+            handler_class = self.request_methods[method]
             setattr(self, method, handler_class(self.base_url, self.request_handler))
 
     def __getattr__(self, item: str):
@@ -72,10 +80,11 @@ class Client:
                 return getattr(handler, item)
         raise AttributeError(f"'Client' object has no attribute '{item}'")
     
-    # Syncronous Requests
+    # Synchronous Requests
     def _make_request(self, api_url: str, method: str, params: dict = None, payload: dict = None, return_all=False):
         """
         Makes the actual HTTP request based on the method.
+        Handles empty or non-JSON responses safely.
         """
         headers = {
             "Authorization": f"Bearer {self.access_token}",
@@ -93,10 +102,24 @@ class Client:
                 json=payload,
             )
             response.raise_for_status()
-            return response.json(), response
-        
+
+            # Safely handle JSON or empty responses
+            if response.content:
+                try:
+                    data = response.json()
+                except ValueError:
+                    # Response is not JSON
+                    data = response.text
+            else:
+                data = None  # No content
+
+            return data, response
+
         except requests.exceptions.RequestException as e:
-            raise RuntimeError(f"HTTP request failed: {e}") from e
+            # Provide more info including raw response text if available
+            resp_text = getattr(e.response, "text", "") if hasattr(e, "response") else ""
+            raise RuntimeError(f"HTTP request failed: {e}. Response body: {resp_text}") from e
+
 
     def _request_handler(self, api_url: str, method: str, params: dict = None, payload: dict = None, return_all=False, **kwargs):
         """
@@ -104,7 +127,7 @@ class Client:
         """
         endpoint = api_url.split(self.base_url)[-1].split("?")[0]  # Extract endpoint from URL
         params = params or {}
-        # print(f'Return ALl: {return_all}')
+
         @self.rate_limiter(endpoint)
         def make_request():
             try:

@@ -2,10 +2,20 @@ from urllib.parse import urlencode
 from typing import Dict, Any, Optional, Type, List, Union, Tuple, get_origin, get_args, Literal
 from datetime import datetime
 import typing_inspect
+import logging
+
 from dataclasses import fields, is_dataclass
 
 from ..configs import *
 from ..utils.validate_fields import validate_field_string, build_id_field_string
+
+if not logging.getLogger().hasHandlers():
+    logging.basicConfig(
+        level=logging.INFO,  # default level
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    )
+
+logger = logging.getLogger(__name__)
 
 def is_optional_type(field_type):
     """
@@ -20,10 +30,12 @@ class BaseRequest:
     def __init__(self, base_url: str, base_path=""):
         self.base_url = base_url
         self.base_path = base_path
+        self.logger = logging.getLogger(self.__class__.__name__)
 
     def format_url(self, path: str, query_params: Dict[str, Any] = None) -> str:
         return f"{self.base_url}{path}"
-
+    
+    @staticmethod
     def convert_array_field(field_name: str, value: Any, item_type: Type) -> Any:
         """
         Convert and validate array query parameters based on API requirements.
@@ -33,6 +45,7 @@ class BaseRequest:
         :param item_type: The expected type of the array elements.
         :return: A validated and converted value based on array size and field name.
         """
+        logger = logging.getLogger("BaseRequest.convert_array_field")
         try:
             # Ensure the value is treated as a list
             if not isinstance(value, list):
@@ -74,7 +87,10 @@ class BaseRequest:
 
             # Default behavior for fields without double underscores
             return converted_array
+        
         except (ValueError, TypeError) as e:
+            
+            logger.error("Invalid value for array field '%s': %s", field_name, e)
             return {"error": f"Invalid value for array field '{field_name}': {e}"}
     
     def validate_and_convert(self, field_name: str, field_type: Type, value: Any, required: bool) -> Any:
@@ -88,6 +104,8 @@ class BaseRequest:
 
         # Skip validation for optional fields with None value
         if not required and value is None:
+            print("Required field '%s' not provided", field_name)
+            self.logger.error("Required field '%s' not provided", field_name)
             return None
 
         if value is not None:
@@ -195,7 +213,9 @@ class BaseRequest:
                     return bool(value)
                 elif field_type == str:
                     return str(value)
-            except (ValueError, TypeError):
+                
+            except (ValueError, TypeError) as e:
+                self.logger.error("Validation error for field '%s': %s", field_name, e)
                 return {"error": f"Invalid value for field '{field_name}': Expected {field_type}, got {type(value).__name__}."}
 
         return None
@@ -214,7 +234,7 @@ class BaseRequest:
             errors = {}
 
             for field_name, field_type in model.__annotations__.items():
-                print(field_name, field_type)
+                # print(field_name, field_type)
                 # Use the provided field name for validation; apply mappings after validation
                 original_field_name = field_name
                 mapped_field_name = MAPPINGS.get(field_name, field_name)
@@ -227,7 +247,11 @@ class BaseRequest:
 
                 if value is None:
                     if not is_optional:
-                        errors[original_field_name] = f"'{original_field_name}' is required but not provided."
+                        msg = f"'{original_field_name}' is required but not provided."
+                        self.logger.error(msg)
+                        errors[original_field_name] = msg
+                        # raise ValueError(msg)
+                    
                     continue
 
                 # Process nested models

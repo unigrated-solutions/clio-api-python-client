@@ -10,7 +10,7 @@ long_description = (project_root / "README.md").read_text()
 
 setup(
     name="clio-manage-api-client",
-    version="0.1.3",
+    version="0.1.4",
     author="Unigrated Partners",
     author_email="dev@unigratedpartners.com",
     description="Python Client for the Clio Manage API.",

@@ -1,7 +1,15 @@
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-DEFAULT_MODEL_DIRECTORY = Path(__file__).resolve().parent / "models"
-REQUEST_METHODS = ["get", "put", "post", "patch", "delete", "download", "all"]
+if TYPE_CHECKING:
+    from .models.method_hints import (
+        Get as GetRequest,
+        Post as PostRequest,
+        Patch as PatchRequest,
+        Delete as DeleteRequest,
+        Download as DownloadRequest,
+        All as AllRequests
+    )
 
 MAPPINGS = {
             "X_API_VERSION": "X-API-VERSION",
