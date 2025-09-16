@@ -1,7 +1,8 @@
 import requests
 import aiohttp
-from urllib.parse import urljoin
-   
+from urllib.parse import urljoin, unquote, urlsplit
+import re
+
 from .configs import *
 from .classes.requests import Get, Put, Post, Patch, Delete, Download, All
 from .db.response_handler import ResponseHandler
@@ -132,9 +133,10 @@ class Client:
         def make_request():
             try:
                 if method == "DOWNLOAD":
-                    response_obj = self._download_content(api_url, params)
+                    
+                    output_path, response_obj = self._download_content(api_url, params)
                     self.rate_limiter.update_rate_limits(endpoint, response_obj.headers)
-                    return response_obj
+                    return output_path, response_obj
 
                 if return_all is False:
                     # Single request
@@ -174,17 +176,108 @@ class Client:
 
         return make_request()
     
+    # def _download_content(self, url: str, params: dict = None):
+    #     """
+    #     Makes the actual HTTP request based on the method.
+    #     """
+    #     print("Downloading COntent")
+    #     headers = {
+    #         "Authorization": f"Bearer {self.access_token}",
+    #         "Content-Type": "application/pdf",
+    #         }
+    #     def get_base_url(url: str) -> str:
+    #         base = url.rstrip('/').rsplit('/', 1)[0]
+    #         return base + '.json'
+        
+    #     base_params = {'fields':'name'}
+    #     api_base_url = get_base_url(url)
+    #     print(api_base_url)
+    #     response = requests.get(api_base_url, headers=headers, params=base_params)
+    #     print(response.json())
+        
+    #     try:
+    #         response = requests.get(url, headers=headers, params=params)
+
+    #         if response.status_code == 429:
+    #             retry_after = int(response.headers.get("Retry-After", 1))
+    #             raise requests.exceptions.RequestException(
+    #                 f"Rate limited. Retry after {retry_after} seconds."
+    #             )
+
+    #         if response.status_code != 200:
+    #             raise requests.exceptions.RequestException(f"HTTP {response.status_code}: {response.text}")
+
+    #         return response
+        
+    #     except requests.exceptions.RequestException as e:
+    #         raise RuntimeError(f"HTTP request failed: {e}") from e
+
     def _download_content(self, url: str, params: dict = None):
         """
-        Makes the actual HTTP request based on the method.
+        Downloads the file from Clio and saves it to the current working directory.
+        If no filename is found, fallback to using the document ID with the correct extension.
         """
 
-        headers = {
-            "Authorization": f"Bearer {self.access_token}",
-            "Content-Type": "application/pdf",
+        # ------------ Internal Helper Functions ------------
+        def _safe_filename(name: str) -> str:
+            name = name.strip().replace("/", "-").replace("\\", "-")
+            return re.sub(r'[\x00-\x1f<>:"|?*]+', "-", name)[:255] or "downloaded_file"
+
+        def _filename_from_content_disposition(cd: str | None) -> str | None:
+            if not cd:
+                return None
+            match = re.search(r'filename\*?=(?:UTF-8\'\')?"?([^";]+)"?', cd)
+            return _safe_filename(unquote(match.group(1))) if match else None
+
+        def get_base_url(url: str) -> str:
+            base = url.rstrip('/').rsplit('/', 1)[0]
+            return base + '.json'
+
+        def get_doc_id_from_url(url: str) -> str:
+            parts = urlsplit(url).path.strip("/").split("/")
+            for i, part in enumerate(parts):
+                if part == "documents" and i + 1 < len(parts):
+                    return parts[i + 1]
+            return "unknown_id"
+
+        def guess_extension(content_type: str) -> str:
+            mime_map = {
+                "application/pdf": ".pdf",
+                "application/msword": ".doc",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document": ".docx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": ".xlsx",
+                "application/zip": ".zip",
+                "image/jpeg": ".jpg",
+                "image/png": ".png",
             }
+            return mime_map.get(content_type.split(";")[0].strip(), "")
+
+        # ------------ Step 1: Fetch Metadata (.json) ------------
+        meta_url = get_base_url(url)
+        print(f"Meta URL: {meta_url}")
+
+        meta_headers = {
+            "Authorization": f"Bearer {self.access_token}",
+            "Accept": "application/json"
+        }
+
         try:
-            response = requests.get(url, headers=headers, params=params)
+            response = requests.get(meta_url, headers=meta_headers, params={'fields': 'name'})
+            response.raise_for_status()
+            meta = response.json()
+
+            filename_from_json = _safe_filename(meta.get("data", {}).get("name", ""))
+        except Exception:
+            print("Failed to fetch metadata, continuing without it.")
+            filename_from_json = ""
+
+        download_headers = {
+            "Authorization": f"Bearer {self.access_token}",
+            "Accept": "*/*"
+        }
+
+        try:
+            response = requests.get(url, headers=download_headers, params=params, stream=True, allow_redirects=True)
 
             if response.status_code == 429:
                 retry_after = int(response.headers.get("Retry-After", 1))
@@ -195,11 +288,23 @@ class Client:
             if response.status_code != 200:
                 raise requests.exceptions.RequestException(f"HTTP {response.status_code}: {response.text}")
 
-            return response
-        
+            content_disposition = response.headers.get("Content-Disposition")
+            content_type = response.headers.get("Content-Type", "")
+            doc_id = get_doc_id_from_url(url)
+            fallback_ext = guess_extension(content_type)
+            filename = (
+                _filename_from_content_disposition(content_disposition)
+                or filename_from_json
+                or f"{doc_id}{fallback_ext}"
+            )
+
+            output_path = self._save_response_to_file(response, filename)
+
+            return output_path, response
+
         except requests.exceptions.RequestException as e:
             raise RuntimeError(f"HTTP request failed: {e}") from e
-
+        
     #Asyncronous Requests         
     async def _make_async_request(self, url: str, method: str, params: dict = None, payload: dict = None):
         """
@@ -322,6 +427,38 @@ class Client:
 
         except aiohttp.ClientError as e:
             raise RuntimeError(f"HTTP request failed: {e}") from e
+    
+
+    def _save_response_to_file(self, response: requests.Response, filename: str, subdir: str = "downloads") -> Path:
+        """
+        Saves the streamed response to a file.
+        If file already exists, appends (1), (2), etc.
+        Returns the final Path used.
+        """
+        output_dir = Path.cwd() / subdir
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        base = output_dir / filename
+        final_path = base
+
+        # Split filename into name and extension
+        stem = final_path.stem
+        suffix = final_path.suffix
+        counter = 1
+
+        # Generate a non-colliding filename
+        while final_path.exists():
+            final_path = output_dir / f"{stem}({counter}){suffix}"
+            counter += 1
+
+        # Save content
+        with open(final_path, "wb") as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                if chunk:
+                    f.write(chunk)
+
+        print(f"✅ File saved to: {final_path}")
+        return final_path
     
     def set_bearer_token(self, new_token: str):
         self.access_token = new_token

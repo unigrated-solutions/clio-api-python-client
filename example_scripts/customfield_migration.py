@@ -35,7 +35,7 @@ import pandas as pd
 
 try:
     # Try the installed package (preferred)
-    from clio_manage_python_client import Clio_Manage
+    from clio_manage_python_client import Manage
     
 except ImportError:
     # Fallback: add local path (assumes script is in project_root/example_scripts/)

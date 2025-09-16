@@ -4,7 +4,7 @@ import sys
 import os
 from datetime import datetime, timedelta, date
 
-from clio_manage_python_client import ClioManage
+from clio_manage_python_client import Manage
     
 
 async def main():
@@ -13,7 +13,7 @@ async def main():
     Read: Api, Calendars, Contacts, Custom Fields, Documents, General, Matters, Users
     '''
     token = "ACCESS TOKEN"
-    client = ClioManage(access_token=token, store_responses=True, async_requests=True)
+    client = Manage(access_token=token, store_responses=True, async_requests=True)
 
     try:
         # Use utility to pick a random ID from recent matters

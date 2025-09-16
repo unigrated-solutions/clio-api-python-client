@@ -1,4 +1,9 @@
-## 8/14/25 Update:
+## 9/15/25 Update:
+   - **Added temporary fixes for download endpoints. I am unsure what version it stopped working in. Update to _download_content was generated almost exclusive with chatGPT which I rarely use for core functionality. An updated, cleaner version will be released soon**
+   - **Fixed Typos and imports in README**
+   - **Running in Async has not been tested recently and will likely require minor changes.**
+
+## 8/14/25:
    - **Added temporary fix for endpoints that have 'fields' requirements in both the Query Parameters and Payload Parameters**
    - **To be able to take advantage of the field builder validation for "fields='all'", I added an optional response_fields argument**
       - This will override any provided "fields" argument even if "fields" isn't a required payload paramater.

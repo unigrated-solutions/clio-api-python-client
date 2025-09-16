@@ -2,7 +2,7 @@ import pandas as pd
 
 try:
     # Try the installed package (preferred)
-    from clio_manage_python_client import Clio_Manage
+    from clio_manage_python_client import Manage
 except ImportError:
     # Fallback: add local path (assumes script is in project_root/example_scripts/)
     import sys
@@ -12,7 +12,7 @@ except ImportError:
     src_path = project_root / "src"
     sys.path.insert(0, str(src_path))
 
-    from clio_manage_python_client import Clio_Manage
+    from clio_manage_python_client import Manage
 
 
 def process_file(file_path, client):
@@ -86,7 +86,7 @@ if __name__ == "__main__":
     '''
     access_token = "CHANGEME"
     file_path = "CHANGEME"
-    client = Clio_Manage(access_token=access_token, store_responses=False)
+    client = Manage(access_token=access_token, store_responses=False)
     try:
         responses = process_file(file_path, client)
         print(responses)

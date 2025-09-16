@@ -10,10 +10,17 @@ pip install clio-manage-api-client
 
 ### Initialization
 ```python
-import clio-manage-api-client as Clio
+import clio_manage_python_client as Clio
 
 client = Clio.Manage(access_token="your_access_token") # 'store_responses=True' for sqlite response handler
 ```
+Or
+```python
+from clio_manage_python_client import Manage as Client
+
+client = Client(access_token="your_access_token")
+```
+
 ## Key Features
 
 1. **Dynamic Endpoint Management**:

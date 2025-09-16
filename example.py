@@ -3,7 +3,7 @@ import sys
 import os
 from datetime import datetime, timedelta, date
 
-from clio_manage_python_client import ClioManage
+from clio_manage_python_client import Manage
 
 # Example usage
 if __name__ == "__main__":
@@ -12,7 +12,7 @@ if __name__ == "__main__":
     Read: Api, Calendars, Contacts, Custom Fields, Documents, General, Matters, Users
     '''
     token = "ACCESS TOKEN"
-    client = ClioManage(access_token=token, store_responses=True)
+    client = Manage(access_token=token, store_responses=True)
     try:
 
         random_id = client.utils.export.get_random_id(client.get.matters(limit=100, fields="id"))

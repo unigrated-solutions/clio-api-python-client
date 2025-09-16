@@ -632,6 +632,9 @@ class EndpointBase:
             ),
         }
         
+    def fields(self):
+        print(self.post_method)
+        
 class DownloadEndpointBase:
     """
     Class for grouping and managing download endpoints.
