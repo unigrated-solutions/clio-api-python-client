@@ -175,8 +175,9 @@ cython_debug/
 
 *.code-workspace
 .ignore/
-models/*
+models/
 contacts.xlsx
 *.backup*
-*output/*
+output/
 *.sqlite
+*.db
