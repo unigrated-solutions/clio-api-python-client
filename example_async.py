@@ -1,11 +1,9 @@
 import asyncio
 import json
-import sys
-import os
 from datetime import datetime, timedelta, date
 
 from clio_manage_python_client import Manage
-    
+
 
 async def main():
     '''
@@ -17,7 +15,7 @@ async def main():
 
     try:
         # Use utility to pick a random ID from recent matters
-        random_id = client.utils.export.get_random_id(
+        random_id = client.utils.get_random_id(
             await client.get.matters(limit=100, fields="id")
         )
 
@@ -36,7 +34,7 @@ async def main():
         print(json.dumps(response, indent=2))
 
         # Matter contacts
-        response = await client.get.matters.contacts(
+        response = await client.get.matters.client(
             id=random_id,
             fields="first_name,last_name,is_client,relationship{description}"
         )
@@ -46,19 +44,19 @@ async def main():
         one_year_ago = date.today() - timedelta(days=365)
         response = await client.all.matters(
             limit=200,
-            open_date__=f'>={one_year_ago}',
+            open_date__=f">={one_year_ago}",
             order="open_date(asc)",
             fields="id,display_number,custom_number,open_date,description,location,client_reference,has_tasks,client{name},practice_area{name,category},responsible_attorney{name}"
         )
-        client.utils.export.save_to_xlsx(response, "recent_matters.xlsx")
+        client.utils.save_to_xlsx(response, "recent_matters.xlsx")
 
         # Export calendar entries
         response = await client.all.calendar_entries(
             fields="start_at,end_at,all_day,location,description,summary,attendees{name}",
             from_=datetime.now(),
-            to=client.utils.time.end_of_the_month()
+            to=client.utils.end_of_the_month()
         )
-        client.utils.export.save_to_xlsx(response, "calendar_entries.xlsx")
+        client.utils.save_to_xlsx(response, "calendar_entries.xlsx")
 
     except Exception as e:
         print(f"An error occurred: {e}")
